@@ -1,0 +1,6 @@
+{
+  "name": "NFCS UNN Website",
+  "description": "Public-facing website, content strategy, and component architecture for NFCS UNN (St. Peter's Catholic Chaplaincy).",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
