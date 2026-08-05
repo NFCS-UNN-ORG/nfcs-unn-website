@@ -82,7 +82,7 @@ export const PillarsGrid: React.FC<PillarsGridProps> = ({ onNavigate }) => {
           ))}
         </div>
 
-        {/* Bottom Centered Pill Button (Matches Figma Wireframe button) */}
+        {/* Bottom Centered Button */}
         <div className="text-center">
           <button
             onClick={() => onNavigate('spiritual')}

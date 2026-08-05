@@ -30,7 +30,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ onNavigate }) => {
             <div className="bg-[#4D2EAB]/5 dark:bg-slate-900/80 p-3 rounded-2xl shadow-2xl border border-[#4D2EAB]/20 dark:border-slate-800/80 backdrop-blur-md">
               <div className="relative aspect-4/5 rounded-xl bg-stone-200 dark:bg-slate-800 overflow-hidden flex flex-col items-center justify-center p-4 group">
                 <img
-                  src="./public/assets/st-albert.jpg"
+                  src="/assets/st-albert.jpg"
                   alt="St. Albert the Great"
                   className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                 />

@@ -26,7 +26,7 @@ export const ImpactStatsSection: React.FC = () => {
           </div>
         </div>
 
-        {/* 2 Media Cards Grid (Matching Figma layout center media boxes) */}
+        {/* 2 Media Cards Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12">
           <div className="relative aspect-16/9 rounded-2xl overflow-hidden bg-stone-200 shadow-md group">
             <img
@@ -53,7 +53,7 @@ export const ImpactStatsSection: React.FC = () => {
           </div>
         </div>
 
-        {/* Big Numbers Row (Matching 500k / 200+ / 100+ row in Figma screenshot) */}
+        {/* Big Numbers Row */}
         <div className="bg-stone-50 rounded-2xl p-8 border border-stone-200/80 grid grid-cols-1 sm:grid-cols-3 gap-8 text-center">
           <div className="space-y-1">
             <div className="text-4xl sm:text-5xl font-black text-stone-900 tracking-tight flex items-center justify-center gap-2">

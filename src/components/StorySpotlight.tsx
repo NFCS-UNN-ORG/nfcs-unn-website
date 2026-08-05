@@ -33,7 +33,7 @@ export const StorySpotlight: React.FC<StorySpotlightProps> = ({ onNavigate }) =>
           </h2>
         </div>
 
-        {/* Featured Testimonial Card (Matches Figma wireframe slider layout) */}
+        {/* Featured Testimonial Card */}
         <div className="bg-stone-50 rounded-3xl p-6 sm:p-8 border border-stone-200 shadow-lg relative max-w-4xl mx-auto">
           <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-center">
             
@@ -85,7 +85,7 @@ export const StorySpotlight: React.FC<StorySpotlightProps> = ({ onNavigate }) =>
 
           </div>
 
-          {/* Carousel Slider Navigation Controls (Matches dots + arrows in Figma wireframe) */}
+          {/* Carousel Slider Navigation Controls */}
           <div className="flex items-center justify-between mt-6 pt-4 border-t border-stone-200/80">
             {/* Pagination Dots */}
             <div className="flex items-center gap-2">

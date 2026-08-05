@@ -1,19 +1,38 @@
 export type PageTab =
   | 'home'
   | 'about'
+  | 'structure'
+  | 'mass-confession'
+  | 'prayer-request'
+  | 'fellowship'
+  | 'organs'
+  | 'societies'
+  | 'faculties'
+  | 'mentorship'
+  | 'academic-support'
+  | 'forums'
+  | 'alumni'
   | 'initiatives'
-  | 'donations'
-  | 'spiritual'
-  | 'student-life'
-  | 'blog'
-  | 'get-involved'
   | 'events'
-  | 'gallery'
-  | 'faq'
-  | 'reports'
   | 'success-stories'
+  | 'gallery'
+  | 'blog'
+  | 'faq'
+  | 'calendar'
   | 'contact'
-  | 'figma-guide';
+  | 'donations'
+  | 'get-involved';
+
+export interface NfcsOrgan {
+  id: string;
+  name: string;
+  acronym: string;
+  description: string;
+  meetingDay: string;
+  meetingTime: string;
+  venue: string;
+  roles: string[];
+}
 
 export interface ProjectItem {
   id: string;

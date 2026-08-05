@@ -86,7 +86,7 @@ export const NavBody = ({ children, className, visible }: NavBodyProps) => {
         damping: 28,
       }}
       className={`mx-auto hidden lg:flex flex-row items-center justify-between transition-all duration-300 px-4 py-1.5 max-w-7xl ${visible
-        ? 'bg-white/60 dark:bg-[#080A26]/70 backdrop-blur-xl shadow-2xl rounded-full border border-white/40 dark:border-white/10 ring-1 ring-black/5 dark:ring-white/10'
+        ? 'bg-white/60 dark:bg-[#080A26]/70 backdrop-blur-xl shadow-2xl rounded-full translate-y-14 border border-white/40 dark:border-white/10 ring-1 ring-black/5 dark:ring-white/10'
         : 'bg-transparent border-none rounded-none'
         } ${className || ''}`}
     >

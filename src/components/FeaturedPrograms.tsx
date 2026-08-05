@@ -75,7 +75,7 @@ export const FeaturedPrograms: React.FC<FeaturedProgramsProps> = ({ onNavigate }
             </div>
 
             <div>
-              {/* Progress/Stat Indicator Bar (Matches Figma Wireframe bar design) */}
+              {/* Progress/Stat Indicator Bar */}
               <div className="bg-stone-100 p-2.5 rounded-lg mb-4">
                 <div className="flex justify-between items-center text-xs text-stone-600 font-medium mb-1.5">
                   <span>{card.statLabel}</span>

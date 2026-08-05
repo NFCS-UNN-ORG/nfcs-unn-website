@@ -14,7 +14,7 @@ export const ChaplaincySpotlight: React.FC<ChaplaincySpotlightProps> = ({ onNavi
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
           
-          {/* Asymmetric Image Grid (Matches Figma bottom About Us images layout) */}
+          {/* Asymmetric Image Grid */}
           <div className="lg:col-span-6 grid grid-cols-2 gap-4">
             <div className="space-y-4">
               <div className="relative aspect-3/4 rounded-2xl overflow-hidden bg-stone-200 shadow-md">

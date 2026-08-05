@@ -1,4 +1,58 @@
-import { MassSchedule, ExcoMember, PiousSociety, FacultyAssociation, BlogPost, EventItem, Testimonial, ProjectItem } from '../types';
+import { MassSchedule, ExcoMember, PiousSociety, FacultyAssociation, BlogPost, EventItem, Testimonial, ProjectItem, NfcsOrgan } from '../types';
+
+export const NFCS_ORGANS: NfcsOrgan[] = [
+  {
+    id: 'o1',
+    name: 'Evangelization & Liturgical Organ',
+    acronym: 'ELC',
+    description: 'Responsible for Bible studies, door-to-door evangelization, retreat planning, and liturgical coordination across UNN campus.',
+    meetingDay: 'Wednesdays',
+    meetingTime: '4:00 PM',
+    venue: "St. Peter's Chaplaincy Hall A",
+    roles: ['Scripture reflection & Bible sharing', 'Outreach & door-to-door evangelization', 'Retreat & Holy Hour animation'],
+  },
+  {
+    id: 'o2',
+    name: 'Choir & Music Ministry Organ',
+    acronym: 'STPEC Choir',
+    description: 'Elevating Sunday and daily Holy Masses through solemn sacred music, vocal training, orchestral instrumentation, and liturgical singing.',
+    meetingDay: 'Mondays & Fridays',
+    meetingTime: '5:00 PM',
+    venue: 'Choir Rehearsal Pavilion',
+    roles: ['Sunday & Weekday Mass chorals', 'Hymnology & voice training sessions', 'Special concert & carols performances'],
+  },
+  {
+    id: 'o3',
+    name: 'Ushering & Protocol Organ',
+    acronym: 'UPO',
+    description: 'Ensuring reverent orderliness, welcoming worshippers with warmth, collection assistance, seating arrangements, and VIP protocol.',
+    meetingDay: 'Saturdays',
+    meetingTime: '4:00 PM',
+    venue: "St. Peter's Chaplaincy Main Church",
+    roles: ['Congregational ushering & seating', 'Offertory & collection management', 'Event protocol & crowd coordination'],
+  },
+  {
+    id: 'o4',
+    name: 'Publicity & Media Organ',
+    acronym: 'PMC',
+    description: 'Managing NFCS UNN digital presence, high-definition photography, Mass livestreaming, website updates, publications, and graphic design.',
+    meetingDay: 'Sundays',
+    meetingTime: '3:00 PM',
+    venue: 'Chaplaincy ICT & Media Hub',
+    roles: ['Mass & event photography/videography', 'Social media & website administration', 'Flyer design & noticeboard bulletins'],
+  },
+  {
+    id: 'o5',
+    name: 'Welfare & Socials Organ',
+    acronym: 'WSO',
+    description: 'Coordinating student welfare support, sick member visitation, exam refreshments, picnic outings, and hospitality for visiting guests.',
+    meetingDay: 'Saturdays',
+    meetingTime: '2:00 PM',
+    venue: 'Chaplaincy Youth & Social Pavilion',
+    roles: ['Indigent student welfare assistance', 'Hostel visitation & care packages', 'Event hospitality & social planning'],
+  },
+];
+
 
 export const SITE_INFO = {
   name: 'NFCS UNN',

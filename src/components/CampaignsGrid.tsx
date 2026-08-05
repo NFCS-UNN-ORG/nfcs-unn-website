@@ -78,7 +78,7 @@ export const CampaignsGrid: React.FC<CampaignsGridProps> = ({ onNavigate }) => {
           </div>
         </div>
 
-        {/* 6-Card Grid (2 Rows of 3 Cards each matching Figma screenshot) */}
+        {/* 6-Card Grid */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {campaigns.map((card, idx) => (
             <div

@@ -8,11 +8,14 @@ import { AboutPageView } from './components/Pages/AboutPageView';
 import { InitiativesPageView } from './components/Pages/InitiativesPageView';
 import { DonationsPageView } from './components/Pages/DonationsPageView';
 import { GetInvolvedPageView } from './components/Pages/GetInvolvedPageView';
-import { SpiritualLifeView } from './components/Pages/SpiritualLifeView';
-import { StudentLifeView } from './components/Pages/StudentLifeView';
+import { StructurePageView } from './components/Pages/StructurePageView';
+import { PrayerRequestView } from './components/Pages/PrayerRequestView';
+import { OrgansView } from './components/Pages/OrgansView';
+import { MentorshipView } from './components/Pages/MentorshipView';
+import { AcademicSupportView } from './components/Pages/AcademicSupportView';
+import { AlumniView } from './components/Pages/AlumniView';
+import { CalendarView } from './components/Pages/CalendarView';
 import { BlogPageView } from './components/Pages/BlogPageView';
-import { FigmaTranslationDoc } from './components/Pages/FigmaTranslationDoc';
-import { ReportsPageView } from './components/Pages/ReportsPageView';
 import { SuccessStoriesPageView } from './components/Pages/SuccessStoriesPageView';
 import { FaqPageView } from './components/Pages/FaqPageView';
 import { GalleryPageView } from './components/Pages/GalleryPageView';
@@ -26,6 +29,20 @@ export default function App() {
     setActiveTab(tab);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
+
+  const isStructureTab = [
+    'structure',
+    'mass-confession',
+    'prayer-request',
+    'fellowship',
+    'organs',
+    'societies',
+    'faculties',
+    'mentorship',
+    'academic-support',
+    'forums',
+    'alumni',
+  ].includes(activeTab);
 
   return (
     <ThemeProvider>
@@ -45,19 +62,22 @@ export default function App() {
 
             {activeTab === 'about' && <AboutPageView />}
 
+            {isStructureTab && (
+              <StructurePageView
+                initialSubTab={activeTab === 'structure' ? 'mass-confession' : activeTab}
+                onNavigate={handleNavigate}
+              />
+            )}
+
             {activeTab === 'initiatives' && <InitiativesPageView />}
 
             {activeTab === 'donations' && <DonationsPageView />}
 
             {activeTab === 'get-involved' && <GetInvolvedPageView onNavigate={handleNavigate} />}
 
-            {activeTab === 'spiritual' && <SpiritualLifeView />}
-
-            {activeTab === 'student-life' && <StudentLifeView />}
-
             {activeTab === 'blog' && <BlogPageView />}
 
-            {activeTab === 'reports' && <ReportsPageView onNavigate={handleNavigate} />}
+            {activeTab === 'calendar' && <CalendarView />}
 
             {activeTab === 'success-stories' && <SuccessStoriesPageView onNavigate={handleNavigate} />}
 
@@ -68,8 +88,6 @@ export default function App() {
             {activeTab === 'contact' && <ContactPageView onNavigate={handleNavigate} />}
 
             {activeTab === 'events' && <EventsPageView onNavigate={handleNavigate} />}
-
-            {activeTab === 'figma-guide' && <FigmaTranslationDoc />}
           </main>
         </div>
 

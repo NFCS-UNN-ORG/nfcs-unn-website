@@ -14,25 +14,25 @@ const ThemeContext = createContext<ThemeContextValue | null>(null);
 
 const THEME_STORAGE_KEY = 'nfcs-theme';
 
+export interface ThemeProviderProps {
+  children?: React.ReactNode;
+  defaultTheme?: ThemeMode;
+}
+
 export function ThemeProvider({
   children,
   defaultTheme = 'system',
-}: {
-  children: React.ReactNode;
-  defaultTheme?: ThemeMode;
-}) {
-  const [theme, setThemeState] = useState<ThemeMode>('system');
-  const [resolvedTheme, setResolvedTheme] = useState<'light' | 'dark'>('light');
-
-  // Read stored theme on mount
-  useEffect(() => {
+}: ThemeProviderProps) {
+  const [theme, setThemeState] = useState<ThemeMode>(() => {
+    if (typeof window === 'undefined') return defaultTheme;
     try {
-      const stored = (localStorage.getItem(THEME_STORAGE_KEY) as ThemeMode) || defaultTheme;
-      setThemeState(stored);
+      const stored = localStorage.getItem(THEME_STORAGE_KEY) as ThemeMode;
+      return stored || defaultTheme;
     } catch {
-      setThemeState(defaultTheme);
+      return defaultTheme;
     }
-  }, [defaultTheme]);
+  });
+  const [resolvedTheme, setResolvedTheme] = useState<'light' | 'dark'>('light');
 
   // Apply theme class to <html> element
   useEffect(() => {
