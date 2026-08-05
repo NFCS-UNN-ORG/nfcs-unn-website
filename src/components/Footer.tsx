@@ -6,10 +6,9 @@ import { NfcsLogo } from './NfcsLogo';
 
 interface FooterProps {
   onNavigate: (tab: PageTab) => void;
-  onOpenPortalModal: () => void;
 }
 
-export const Footer: React.FC<FooterProps> = ({ onNavigate, onOpenPortalModal }) => {
+export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
   const [email, setEmail] = useState('');
   const [subscribed, setSubscribed] = useState(false);
 
@@ -168,9 +167,14 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate, onOpenPortalModal })
                 </button>
               </li>
               <li>
-                <button onClick={onOpenPortalModal} className="hover:text-emerald-400 transition-colors font-semibold">
-                  Portal Login
-                </button>
+                <a
+                  href="https://portal.nfcsunn.org"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="hover:text-emerald-400 transition-colors font-semibold"
+                >
+                  Portal Login (portal.nfcsunn.org)
+                </a>
               </li>
             </ul>
           </div>

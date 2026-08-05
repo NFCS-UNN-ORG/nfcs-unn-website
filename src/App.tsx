@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { PageTab } from './types';
+import { ThemeProvider } from './context/ThemeContext';
 import { Header } from './components/Header';
 import { Footer } from './components/Footer';
-import { PortalLoginModal } from './components/PortalLoginModal';
 import { HomePageView } from './components/Pages/HomePageView';
 import { AboutPageView } from './components/Pages/AboutPageView';
 import { InitiativesPageView } from './components/Pages/InitiativesPageView';
@@ -21,7 +21,6 @@ import { EventsPageView } from './components/Pages/EventsPageView';
 
 export default function App() {
   const [activeTab, setActiveTab] = useState<PageTab>('home');
-  const [portalModalOpen, setPortalModalOpen] = useState(false);
 
   const handleNavigate = (tab: PageTab) => {
     setActiveTab(tab);
@@ -29,61 +28,55 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen bg-stone-50 font-sans text-stone-900 selection:bg-emerald-200 selection:text-emerald-900 flex flex-col justify-between antialiased">
-      <div>
-        <Header
-          activeTab={activeTab}
-          setActiveTab={handleNavigate}
-          onOpenPortalModal={() => setPortalModalOpen(true)}
+    <ThemeProvider>
+      <div className="min-h-screen bg-white dark:bg-[#080A26] font-sans text-stone-900 dark:text-slate-100 selection:bg-indigo-200 selection:text-indigo-900 flex flex-col justify-between antialiased transition-colors duration-400">
+        <div>
+          <Header
+            activeTab={activeTab}
+            setActiveTab={handleNavigate}
+          />
+
+          <main>
+            {activeTab === 'home' && (
+              <HomePageView
+                onNavigate={handleNavigate}
+              />
+            )}
+
+            {activeTab === 'about' && <AboutPageView />}
+
+            {activeTab === 'initiatives' && <InitiativesPageView />}
+
+            {activeTab === 'donations' && <DonationsPageView />}
+
+            {activeTab === 'get-involved' && <GetInvolvedPageView onNavigate={handleNavigate} />}
+
+            {activeTab === 'spiritual' && <SpiritualLifeView />}
+
+            {activeTab === 'student-life' && <StudentLifeView />}
+
+            {activeTab === 'blog' && <BlogPageView />}
+
+            {activeTab === 'reports' && <ReportsPageView onNavigate={handleNavigate} />}
+
+            {activeTab === 'success-stories' && <SuccessStoriesPageView onNavigate={handleNavigate} />}
+
+            {activeTab === 'faq' && <FaqPageView onNavigate={handleNavigate} />}
+
+            {activeTab === 'gallery' && <GalleryPageView onNavigate={handleNavigate} />}
+
+            {activeTab === 'contact' && <ContactPageView onNavigate={handleNavigate} />}
+
+            {activeTab === 'events' && <EventsPageView onNavigate={handleNavigate} />}
+
+            {activeTab === 'figma-guide' && <FigmaTranslationDoc />}
+          </main>
+        </div>
+
+        <Footer
+          onNavigate={handleNavigate}
         />
-
-        <main>
-          {activeTab === 'home' && (
-            <HomePageView
-              onNavigate={handleNavigate}
-              onOpenPortalModal={() => setPortalModalOpen(true)}
-            />
-          )}
-
-          {activeTab === 'about' && <AboutPageView />}
-
-          {activeTab === 'initiatives' && <InitiativesPageView />}
-
-          {activeTab === 'donations' && <DonationsPageView />}
-
-          {activeTab === 'get-involved' && <GetInvolvedPageView onNavigate={handleNavigate} />}
-
-          {activeTab === 'spiritual' && <SpiritualLifeView />}
-
-          {activeTab === 'student-life' && <StudentLifeView />}
-
-          {activeTab === 'blog' && <BlogPageView />}
-
-          {activeTab === 'reports' && <ReportsPageView onNavigate={handleNavigate} />}
-
-          {activeTab === 'success-stories' && <SuccessStoriesPageView onNavigate={handleNavigate} />}
-
-          {activeTab === 'faq' && <FaqPageView onNavigate={handleNavigate} />}
-
-          {activeTab === 'gallery' && <GalleryPageView onNavigate={handleNavigate} />}
-
-          {activeTab === 'contact' && <ContactPageView onNavigate={handleNavigate} />}
-
-          {activeTab === 'events' && <EventsPageView onNavigate={handleNavigate} />}
-
-          {activeTab === 'figma-guide' && <FigmaTranslationDoc />}
-        </main>
       </div>
-
-      <Footer
-        onNavigate={handleNavigate}
-        onOpenPortalModal={() => setPortalModalOpen(true)}
-      />
-
-      <PortalLoginModal
-        isOpen={portalModalOpen}
-        onClose={() => setPortalModalOpen(false)}
-      />
-    </div>
+    </ThemeProvider>
   );
 }

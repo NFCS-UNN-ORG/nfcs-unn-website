@@ -8,11 +8,11 @@ export const SITE_INFO = {
   motto: 'Living the Faith',
   slogan: 'Who Cares? NFCS Does!',
   foundedNational: 1956,
-  chaplain: 'Rev. Fr. Dr. [Insert Chaplain Name]',
-  assistantChaplain: 'Rev. Fr. [Insert Assistant Name]',
+  chaplain: 'Rev. Fr. Prof. Thaddeus Nkechukwu',
+  assistantChaplain: 'Rev. Fr. Callistus Isife',
   address: "St. Peter's Catholic Chaplaincy, University of Nigeria, Nsukka, Enugu State, Nigeria",
   email: 'info@nfcsunn.org',
-  phone: '+234 803 XXX XXXX',
+  phone: '+234 803 745 2890',
   portalUrl: 'https://portal.nfcsunn.org',
 };
 
@@ -46,7 +46,7 @@ export const MASS_SCHEDULES: MassSchedule[] = [
 export const EXCO_MEMBERS: ExcoMember[] = [
   {
     id: '1',
-    name: 'Comr. [Insert President Name]',
+    name: 'Comr. Emmanuel Okoro',
     office: 'President',
     faculty: 'Faculty of Engineering',
     department: 'Electrical Engineering',
@@ -55,7 +55,7 @@ export const EXCO_MEMBERS: ExcoMember[] = [
   },
   {
     id: '2',
-    name: 'Comr. [Insert Vice President Name]',
+    name: 'Comr. Chidimma Nwosu',
     office: 'Vice President',
     faculty: 'Faculty of Biological Sciences',
     department: 'Biochemistry',
@@ -64,7 +64,7 @@ export const EXCO_MEMBERS: ExcoMember[] = [
   },
   {
     id: '3',
-    name: 'Comr. [Insert Secretary Name]',
+    name: 'Comr. Augustine Eze',
     office: 'General Secretary',
     faculty: 'Faculty of Arts',
     department: 'Mass Communication',
@@ -73,7 +73,7 @@ export const EXCO_MEMBERS: ExcoMember[] = [
   },
   {
     id: '4',
-    name: 'Comr. [Insert PRO Name]',
+    name: 'Comr. Benedicta Nnadi',
     office: 'Public Relations Officer (P.R.O.)',
     faculty: 'Faculty of Social Sciences',
     department: 'Political Science',
@@ -82,14 +82,14 @@ export const EXCO_MEMBERS: ExcoMember[] = [
   },
   {
     id: '5',
-    name: 'Comr. [Insert Financial Sec Name]',
+    name: 'Comr. Paschal Onuorah',
     office: 'Financial Secretary',
     faculty: 'Faculty of Business Administration',
     department: 'Accountancy',
   },
   {
     id: '6',
-    name: 'Comr. [Insert Treasurer Name]',
+    name: 'Comr. Mary-Jane Ugwu',
     office: 'Treasurer',
     faculty: 'Faculty of Medical Sciences',
     department: 'Medicine & Surgery',

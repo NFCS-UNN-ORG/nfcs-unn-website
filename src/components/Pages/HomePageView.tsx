@@ -13,13 +13,12 @@ import { PageTab } from '../../types';
 
 interface HomePageViewProps {
   onNavigate: (tab: PageTab) => void;
-  onOpenPortalModal: () => void;
 }
 
-export const HomePageView: React.FC<HomePageViewProps> = ({ onNavigate, onOpenPortalModal }) => {
+export const HomePageView: React.FC<HomePageViewProps> = ({ onNavigate }) => {
   return (
     <div className="space-y-0">
-      <HeroSection onNavigate={onNavigate} onOpenPortalModal={onOpenPortalModal} />
+      <HeroSection onNavigate={onNavigate} />
       <FeaturedPrograms onNavigate={onNavigate} />
       <ImpactStatsSection />
       <VisionMissionSection onNavigate={onNavigate} />

@@ -1,265 +1,662 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { PageTab } from '../types';
-import { SITE_INFO } from '../data/nfcsData';
-import { Church, Cross, LogIn, Menu, X, Calendar, BookOpen, Layers, Users, FileText, Sparkles, Heart, GraduationCap, ChevronDown, Image as ImageIcon, HelpCircle, PhoneCall, Award, FileSpreadsheet } from 'lucide-react';
-import { NfcsLogo } from './NfcsLogo';
+import React, { useState, useRef, useEffect } from "react";
+import { PageTab } from "../types";
+import {
+  Home,
+  Info,
+  Cross,
+  Sparkles,
+  FileText,
+  GraduationCap,
+  ChevronDown,
+  Menu,
+  X,
+  Calendar,
+  BookOpen,
+  Layers,
+  LogIn,
+  ImageIcon,
+  HelpCircle,
+  PhoneCall,
+  Award,
+  FileSpreadsheet,
+  Phone,
+} from "lucide-react";
+import { motion, AnimatePresence } from "motion/react";
+import { NfcsLogo } from "./NfcsLogo";
+import { TopNotificationBar } from "./TopNotificationBar";
+import { ResizableNavbar, NavBody, MobileNav, useNavbarVisibility } from "./ui/resizable-navbar";
+import { ThemeToggle } from "./ThemeToggle";
+import { NavItem } from "./NavItem";
 
 interface HeaderProps {
   activeTab: PageTab;
   setActiveTab: (tab: PageTab) => void;
-  onOpenPortalModal: () => void;
 }
 
-export const Header: React.FC<HeaderProps> = ({ activeTab, setActiveTab, onOpenPortalModal }) => {
+export const Header: React.FC<HeaderProps> = ({
+  activeTab,
+  setActiveTab,
+}) => {
+  const isScrolled = useNavbarVisibility();
+  const [hoveredKey, setHoveredKey] = useState<string | null>(null);
+  const [openDropdown, setOpenDropdown] = useState<string | null>(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [pagesDropdownOpen, setPagesDropdownOpen] = useState(false);
+
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
-        setPagesDropdownOpen(false);
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node)
+      ) {
+        setOpenDropdown(null);
       }
     };
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const primaryNavItems: { id: PageTab; label: string; icon: React.ReactNode }[] = [
-    { id: 'home', label: 'Home', icon: <Church className="w-4 h-4" /> },
-    { id: 'about', label: 'About Us', icon: <Users className="w-4 h-4" /> },
-    { id: 'get-involved', label: 'Get Involved (Alumni)', icon: <GraduationCap className="w-4 h-4 text-emerald-600" /> },
-    { id: 'donations', label: 'Donations', icon: <Heart className="w-4 h-4 text-emerald-600 fill-emerald-100" /> },
-    { id: 'events', label: 'Events', icon: <Calendar className="w-4 h-4" /> },
-  ];
+  /* Dropdown Menus Data */
+  const spiritualMenu: {
+    id: PageTab;
+    label: string;
+    icon: React.ReactNode;
+    desc: string;
+  }[] = [
+      {
+        id: "spiritual",
+        label: "Mass Times & Spiritual Life",
+        icon: (
+          <Cross className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+        ),
+        desc: "Mass schedules, sacraments, rosary & confession",
+      },
+      {
+        id: "student-life",
+        label: "Student Life & Societies",
+        icon: <BookOpen className="w-4 h-4 text-sky-600 dark:text-sky-400" />,
+        desc: "Faculty associations & pious societies",
+      },
+    ];
 
-  const secondaryNavItems: { id: PageTab; label: string; icon: React.ReactNode; badge?: string }[] = [
-    { id: 'gallery', label: 'Photo & Video Gallery', icon: <ImageIcon className="w-4 h-4 text-sky-600" /> },
-    { id: 'success-stories', label: 'Success Stories', icon: <Award className="w-4 h-4 text-emerald-600" /> },
-    { id: 'reports', label: 'Reports & Publications', icon: <FileSpreadsheet className="w-4 h-4 text-indigo-600" /> },
-    { id: 'faq', label: 'FAQ & Help', icon: <HelpCircle className="w-4 h-4 text-amber-600" /> },
-    { id: 'contact', label: 'Contact Us', icon: <PhoneCall className="w-4 h-4 text-emerald-600" /> },
-    { id: 'initiatives', label: 'Projects & Impact', icon: <Sparkles className="w-4 h-4 text-emerald-600" /> },
-    { id: 'spiritual', label: 'Spiritual Life & Mass', icon: <Cross className="w-4 h-4 text-stone-600" /> },
-    { id: 'student-life', label: 'Student Life & Faculties', icon: <BookOpen className="w-4 h-4 text-stone-600" /> },
-    { id: 'blog', label: 'Blog & News', icon: <FileText className="w-4 h-4 text-stone-600" /> },
-    { id: 'figma-guide', label: 'Figma Breakdown & Map', icon: <Layers className="w-4 h-4 text-purple-600" /> },
-  ];
+  const impactMenu: {
+    id: PageTab;
+    label: string;
+    icon: React.ReactNode;
+    desc: string;
+  }[] = [
+      {
+        id: "initiatives",
+        label: "Projects & Impact",
+        icon: <Sparkles className="w-4 h-4 text-amber-500 dark:text-amber-400" />,
+        desc: "Chaplaincy development & welfare programs",
+      },
+      {
+        id: "events",
+        label: "Upcoming Events",
+        icon: (
+          <Calendar className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
+        ),
+        desc: "Harvest & Bazaar, retreats & conventions",
+      },
+      {
+        id: "success-stories",
+        label: "Success Stories",
+        icon: (
+          <Award className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+        ),
+        desc: "Testimonials & chaplaincy impact stories",
+      },
+      {
+        id: "reports",
+        label: "Reports & Publications",
+        icon: (
+          <FileSpreadsheet className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+        ),
+        desc: "Financial reports & chapter publications",
+      },
+    ];
 
-  const isSecondaryActive = secondaryNavItems.some(item => item.id === activeTab);
+  const mediaMenu: {
+    id: PageTab;
+    label: string;
+    icon: React.ReactNode;
+    desc: string;
+  }[] = [
+      {
+        id: "gallery",
+        label: "Photo & Video Gallery",
+        icon: (
+          <ImageIcon className="w-4 h-4 text-purple-600 dark:text-purple-400" />
+        ),
+        desc: "Mass photos, event albums & video highlights",
+      },
+      {
+        id: "blog",
+        label: "Blog & News",
+        icon: (
+          <FileText className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+        ),
+        desc: "Spiritual reflections & chapter news",
+      },
+      {
+        id: "faq",
+        label: "FAQ & Support",
+        icon: (
+          <HelpCircle className="w-4 h-4 text-amber-600 dark:text-amber-400" />
+        ),
+        desc: "Frequently asked questions & help guide",
+      },
+      {
+        id: "figma-guide",
+        label: "Figma Breakdown & Map",
+        icon: <Layers className="w-4 h-4 text-[#4D2EAB] dark:text-indigo-400" />,
+        desc: "Sitemap & UI architecture guide",
+      },
+    ];
+
+
+  const isSpiritualActive = spiritualMenu.some((item) => item.id === activeTab);
+  const isImpactActive = impactMenu.some((item) => item.id === activeTab);
+  const isMediaActive = mediaMenu.some((item) => item.id === activeTab);
 
   return (
-    <header className="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-stone-200 shadow-xs transition-all">
-      {/* Top Notification Bar */}
-      <div className="bg-emerald-950 text-emerald-100 text-xs py-1.5 px-4 text-center font-medium flex items-center justify-center gap-2">
-        <span className="inline-block w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-        <span>St. Peter's Catholic Chaplaincy, UNN • Sunday Student Mass @ 8:30 AM</span>
-        <span className="hidden sm:inline-block text-emerald-300 font-semibold">• "{SITE_INFO.motto}"</span>
-      </div>
+    <>
+      {/* Top Announcement Bar - Normal Flow (Scrolls Away Naturally) */}
+      <TopNotificationBar onNavigate={setActiveTab} />
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex items-center justify-between">
-        {/* Brand Logo & Name */}
-        <button
-          onClick={() => setActiveTab('home')}
-          className="flex items-center gap-3 text-left group focus:outline-hidden"
-        >
-          <div className="shrink-0 group-hover:scale-105 transition-transform">
-            <NfcsLogo size={46} />
-          </div>
-          <div>
-            <div className="flex items-center gap-1.5">
-              <span className="font-extrabold text-xl text-stone-900 tracking-tight">NFCS</span>
-              <span className="text-xs font-bold px-2 py-0.5 bg-emerald-100 text-emerald-800 rounded-md">UNN</span>
-            </div>
-            <p className="text-[11px] font-medium text-stone-500 leading-tight">
-              St. Peter's Catholic Chaplaincy
-            </p>
-          </div>
-        </button>
-
-        {/* Desktop Navigation Links */}
-        <nav className="hidden xl:flex items-center gap-1 bg-stone-100/90 p-1.5 rounded-full border border-stone-200/80">
-          {primaryNavItems.map((item) => (
+      {/* Floating Resizable Navbar - Sticky at top-0 */}
+      <header className="sticky top-0 z-50 w-full bg-transparent transition-all">
+        <ResizableNavbar>
+          <NavBody>
+            {/* Prominent Logo Icon Only */}
             <button
-              key={item.id}
-              onClick={() => setActiveTab(item.id)}
-              className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-semibold transition-all ${
-                activeTab === item.id
-                  ? 'bg-emerald-700 text-white shadow-xs'
-                  : 'text-stone-700 hover:text-emerald-800 hover:bg-stone-200/70'
-              }`}
+              onClick={() => setActiveTab("home")}
+              className="flex items-center text-left group focus:outline-hidden cursor-pointer shrink-0 py-1"
+              aria-label="NFCS UNN Home"
             >
-              {item.icon}
-              {item.label}
-            </button>
-          ))}
-
-          {/* Pages Dropdown Trigger */}
-          <div className="relative" ref={dropdownRef}>
-            <button
-              onClick={() => setPagesDropdownOpen(!pagesDropdownOpen)}
-              className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-semibold transition-all ${
-                isSecondaryActive
-                  ? 'bg-emerald-700 text-white shadow-xs'
-                  : 'text-stone-700 hover:text-emerald-800 hover:bg-stone-200/70'
-              }`}
-            >
-              <Layers className="w-4 h-4" />
-              <span>More Pages</span>
-              <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-200 ${pagesDropdownOpen ? 'rotate-180' : ''}`} />
-            </button>
-
-            {/* Dropdown Menu */}
-            {pagesDropdownOpen && (
-              <div className="absolute right-0 mt-2 w-64 bg-white rounded-2xl shadow-xl border border-stone-200 p-2 z-50 animate-in fade-in zoom-in-95 duration-150">
-                <div className="text-[10px] font-bold text-stone-400 uppercase tracking-wider px-3 py-1.5">
-                  Explore Pages & Modules
-                </div>
-                <div className="space-y-0.5">
-                  {secondaryNavItems.map((subItem) => (
-                    <button
-                      key={subItem.id}
-                      onClick={() => {
-                        setActiveTab(subItem.id);
-                        setPagesDropdownOpen(false);
-                      }}
-                      className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold text-left transition-colors ${
-                        activeTab === subItem.id
-                          ? 'bg-emerald-50 text-emerald-800 font-bold'
-                          : 'text-stone-700 hover:bg-stone-100'
-                      }`}
-                    >
-                      <div className="flex items-center gap-2.5">
-                        {subItem.icon}
-                        <span>{subItem.label}</span>
-                      </div>
-                    </button>
-                  ))}
-                </div>
+              <div className="shrink-0 group-hover:scale-105 transition-transform duration-200">
+                <NfcsLogo size={50} />
               </div>
-            )}
-          </div>
-        </nav>
+            </button>
 
-        {/* Header Action Buttons */}
-        <div className="hidden sm:flex items-center gap-2.5">
-          <button
-            onClick={() => setActiveTab('donations')}
-            className="flex items-center gap-1.5 text-xs font-extrabold text-emerald-950 bg-emerald-400 hover:bg-emerald-300 border border-emerald-500/80 px-4 py-2 rounded-xl shadow-xs transition-all cursor-pointer hover:scale-105"
-          >
-            <Heart className="w-3.5 h-3.5 fill-emerald-950" />
-            Donate Now! ↗
-          </button>
-
-          <button
-            onClick={() => setActiveTab('spiritual')}
-            className="flex items-center gap-1.5 text-xs font-semibold text-emerald-800 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200/80 px-3.5 py-2 rounded-xl transition-all"
-          >
-            <Calendar className="w-3.5 h-3.5" />
-            Mass Times
-          </button>
-          
-          <button
-            onClick={onOpenPortalModal}
-            className="flex items-center gap-1.5 text-xs font-semibold text-white bg-emerald-700 hover:bg-emerald-800 px-4 py-2 rounded-xl shadow-xs hover:shadow-md transition-all cursor-pointer"
-          >
-            <LogIn className="w-3.5 h-3.5" />
-            Portal Login
-          </button>
-        </div>
-
-        {/* Mobile menu button */}
-        <div className="xl:hidden flex items-center gap-2">
-          <button
-            onClick={onOpenPortalModal}
-            className="p-2 text-xs font-semibold text-white bg-emerald-700 rounded-lg flex items-center gap-1 sm:hidden"
-          >
-            <LogIn className="w-3.5 h-3.5" />
-            Portal
-          </button>
-          
-          <button
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="p-2.5 rounded-lg text-stone-700 hover:bg-stone-100 transition-colors focus:outline-hidden"
-            aria-label="Toggle Navigation Menu"
-          >
-            {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-          </button>
-        </div>
-      </div>
-
-      {/* Mobile Menu Dropdown */}
-      {mobileMenuOpen && (
-        <div className="xl:hidden bg-white border-b border-stone-200 px-4 pt-2 pb-6 space-y-4 shadow-lg max-h-[85vh] overflow-y-auto animate-in slide-in-from-top duration-200">
-          <div className="space-y-1">
-            <div className="text-[10px] font-bold text-stone-400 uppercase tracking-wider px-2">Main Menu</div>
-            {primaryNavItems.map((item) => (
-              <button
-                key={item.id}
-                onClick={() => {
-                  setActiveTab(item.id);
-                  setMobileMenuOpen(false);
-                }}
-                className={`flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-semibold w-full text-left transition-colors ${
-                  activeTab === item.id
-                    ? 'bg-emerald-700 text-white'
-                    : 'text-stone-700 hover:bg-stone-100'
-                }`}
+            {/* Desktop Navigation Links */}
+            <div
+              className="hidden lg:flex items-center gap-1"
+              ref={dropdownRef}
+            >
+              <NavItem
+                hoverKey="home"
+                currentHover={hoveredKey}
+                onMouseEnter={setHoveredKey}
+                onMouseLeave={() => setHoveredKey(null)}
+                onClick={() => setActiveTab("home")}
+                isActive={activeTab === "home"}
+                icon={
+                  <Home className="w-4 h-4 text-[#4D2EAB] dark:text-indigo-400" />
+                }
               >
-                {item.icon}
-                {item.label}
-              </button>
-            ))}
-          </div>
+                Home
+              </NavItem>
 
-          <div className="space-y-1 border-t border-stone-100 pt-3">
-            <div className="text-[10px] font-bold text-stone-400 uppercase tracking-wider px-2">More Pages & Resources</div>
-            <div className="grid grid-cols-1 gap-1">
-              {secondaryNavItems.map((subItem) => (
-                <button
-                  key={subItem.id}
-                  onClick={() => {
-                    setActiveTab(subItem.id);
-                    setMobileMenuOpen(false);
-                  }}
-                  className={`flex items-center gap-3 px-4 py-2.5 rounded-xl text-xs font-semibold w-full text-left transition-colors ${
-                    activeTab === subItem.id
-                      ? 'bg-emerald-100 text-emerald-900 font-bold'
-                      : 'text-stone-700 hover:bg-stone-100'
-                  }`}
+              {/* 2. About Us */}
+              <NavItem
+                hoverKey="about"
+                currentHover={hoveredKey}
+                onMouseEnter={setHoveredKey}
+                onMouseLeave={() => setHoveredKey(null)}
+                onClick={() => setActiveTab("about")}
+                isActive={activeTab === "about"}
+                icon={
+                  <Info className="w-4 h-4 text-[#4D2EAB] dark:text-indigo-400" />
+                }
+              >
+                About Us
+              </NavItem>
+
+              {/* 3. Spiritual Life Dropdown */}
+              <div
+                className="relative"
+                onMouseEnter={() => {
+                  setOpenDropdown("spiritual");
+                  setHoveredKey("spiritual");
+                }}
+                onMouseLeave={() => {
+                  setOpenDropdown(null);
+                  setHoveredKey(null);
+                }}
+              >
+                <NavItem
+                  hoverKey="spiritual"
+                  currentHover={hoveredKey}
+                  onMouseEnter={setHoveredKey}
+                  onMouseLeave={() => setHoveredKey(null)}
+                  isActive={isSpiritualActive}
+                  icon={
+                    <Cross className="w-4 h-4 text-[#4D2EAB] dark:text-indigo-400" />
+                  }
                 >
-                  {subItem.icon}
-                  {subItem.label}
-                </button>
-              ))}
-            </div>
-          </div>
+                  <span className="flex items-center gap-1">
+                    Spiritual Life
+                    <ChevronDown
+                      className={`w-3.5 h-3.5 transition-transform duration-200 ${openDropdown === "spiritual" ? "rotate-180" : ""
+                        }`}
+                    />
+                  </span>
+                </NavItem>
 
-          <div className="pt-3 border-t border-stone-100 flex flex-col gap-2">
-            <button
-              onClick={() => {
-                setActiveTab('spiritual');
-                setMobileMenuOpen(false);
-              }}
-              className="w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl text-sm font-semibold text-emerald-800 bg-emerald-50 border border-emerald-200"
-            >
-              <Calendar className="w-4 h-4" />
-              Check Mass Schedules
-            </button>
-            
-            <button
-              onClick={() => {
-                onOpenPortalModal();
-                setMobileMenuOpen(false);
-              }}
-              className="w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl text-sm font-semibold text-white bg-emerald-700 shadow-md"
-            >
-              <LogIn className="w-4 h-4" />
-              Member Portal Login
-            </button>
-          </div>
-        </div>
-      )}
-    </header>
+                <AnimatePresence>
+                  {openDropdown === "spiritual" && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 8, scale: 0.96 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      exit={{ opacity: 0, y: 8, scale: 0.96 }}
+                      transition={{ duration: 0.18, ease: "easeOut" }}
+                      className="absolute left-0 top-full mt-2 w-64 rounded-2xl border border-stone-200/90 dark:border-slate-800 bg-white/95 dark:bg-[#080A26]/95 backdrop-blur-xl shadow-2xl p-2 z-50 ring-1 ring-stone-900/5 dark:ring-white/10"
+                    >
+                      {spiritualMenu.map((item) => (
+                        <button
+                          key={item.id}
+                          onClick={() => {
+                            setActiveTab(item.id);
+                            setOpenDropdown(null);
+                          }}
+                          className={`w-full flex items-start gap-3 rounded-xl px-3 py-2.5 text-left transition-all cursor-pointer ${activeTab === item.id
+                            ? "bg-[#4D2EAB]/10 text-[#4D2EAB] dark:bg-indigo-950/80 dark:text-indigo-300 font-bold"
+                            : "hover:bg-stone-100 dark:hover:bg-slate-800 text-stone-800 dark:text-slate-200"
+                            }`}
+                        >
+                          <span className="mt-0.5 shrink-0">{item.icon}</span>
+                          <div>
+                            <p className="text-xs font-semibold">
+                              {item.label}
+                            </p>
+                            <p className="text-[10px] text-stone-500 dark:text-slate-400 font-normal leading-tight">
+                              {item.desc}
+                            </p>
+                          </div>
+                        </button>
+                      ))}
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+
+              {/* 4. Impact & Events Dropdown */}
+              <div
+                className="relative"
+                onMouseEnter={() => {
+                  setOpenDropdown("impact");
+                  setHoveredKey("impact");
+                }}
+                onMouseLeave={() => {
+                  setOpenDropdown(null);
+                  setHoveredKey(null);
+                }}
+              >
+                <NavItem
+                  hoverKey="impact"
+                  currentHover={hoveredKey}
+                  onMouseEnter={setHoveredKey}
+                  onMouseLeave={() => setHoveredKey(null)}
+                  isActive={isImpactActive}
+                  icon={
+                    <Sparkles className="w-4 h-4 text-[#4D2EAB] dark:text-indigo-400" />
+                  }
+                >
+                  <span className="flex items-center gap-1">
+                    Impact & Events
+                    <ChevronDown
+                      className={`w-3.5 h-3.5 transition-transform duration-200 ${openDropdown === "impact" ? "rotate-180" : ""
+                        }`}
+                    />
+                  </span>
+                </NavItem>
+
+                <AnimatePresence>
+                  {openDropdown === "impact" && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 8, scale: 0.96 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      exit={{ opacity: 0, y: 8, scale: 0.96 }}
+                      transition={{ duration: 0.18, ease: "easeOut" }}
+                      className="absolute left-0 top-full mt-2 w-72 rounded-2xl border border-stone-200/90 dark:border-slate-800 bg-white/95 dark:bg-[#080A26]/95 backdrop-blur-xl shadow-2xl p-2 z-50 ring-1 ring-stone-900/5 dark:ring-white/10"
+                    >
+                      {impactMenu.map((item) => (
+                        <button
+                          key={item.id}
+                          onClick={() => {
+                            setActiveTab(item.id);
+                            setOpenDropdown(null);
+                          }}
+                          className={`w-full flex items-start gap-3 rounded-xl px-3 py-2.5 text-left transition-all cursor-pointer ${activeTab === item.id
+                            ? "bg-[#4D2EAB]/10 text-[#4D2EAB] dark:bg-indigo-950/80 dark:text-indigo-300 font-bold"
+                            : "hover:bg-stone-100 dark:hover:bg-slate-800 text-stone-800 dark:text-slate-200"
+                            }`}
+                        >
+                          <span className="mt-0.5 shrink-0">{item.icon}</span>
+                          <div>
+                            <p className="text-xs font-semibold">
+                              {item.label}
+                            </p>
+                            <p className="text-[10px] text-stone-500 dark:text-slate-400 font-normal leading-tight">
+                              {item.desc}
+                            </p>
+                          </div>
+                        </button>
+                      ))}
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+
+              {/* 5. Media & News Dropdown */}
+              <div
+                className="relative"
+                onMouseEnter={() => {
+                  setOpenDropdown("media");
+                  setHoveredKey("media");
+                }}
+                onMouseLeave={() => {
+                  setOpenDropdown(null);
+                  setHoveredKey(null);
+                }}
+              >
+                <NavItem
+                  hoverKey="media"
+                  currentHover={hoveredKey}
+                  onMouseEnter={setHoveredKey}
+                  onMouseLeave={() => setHoveredKey(null)}
+                  isActive={isMediaActive}
+                  icon={
+                    <FileText className="w-4 h-4 text-[#4D2EAB] dark:text-indigo-400" />
+                  }
+                >
+                  <span className="flex items-center gap-1">
+                    Media & News
+                    <ChevronDown
+                      className={`w-3.5 h-3.5 transition-transform duration-200 ${openDropdown === "media" ? "rotate-180" : ""
+                        }`}
+                    />
+                  </span>
+                </NavItem>
+
+                <AnimatePresence>
+                  {openDropdown === "media" && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 8, scale: 0.96 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      exit={{ opacity: 0, y: 8, scale: 0.96 }}
+                      transition={{ duration: 0.18, ease: "easeOut" }}
+                      className="absolute left-0 top-full mt-2 w-72 rounded-2xl border border-stone-200/90 dark:border-slate-800 bg-white/95 dark:bg-[#080A26]/95 backdrop-blur-xl shadow-2xl p-2 z-50 ring-1 ring-stone-900/5 dark:ring-white/10"
+                    >
+                      {mediaMenu.map((item) => (
+                        <button
+                          key={item.id}
+                          onClick={() => {
+                            setActiveTab(item.id);
+                            setOpenDropdown(null);
+                          }}
+                          className={`w-full flex items-start gap-3 rounded-xl px-3 py-2.5 text-left transition-all cursor-pointer ${activeTab === item.id
+                            ? "bg-[#4D2EAB]/10 text-[#4D2EAB] dark:bg-indigo-950/80 dark:text-indigo-300 font-bold"
+                            : "hover:bg-stone-100 dark:hover:bg-slate-800 text-stone-800 dark:text-slate-200"
+                            }`}
+                        >
+                          <span className="mt-0.5 shrink-0">{item.icon}</span>
+                          <div>
+                            <p className="text-xs font-semibold">
+                              {item.label}
+                            </p>
+                            <p className="text-[10px] text-stone-500 dark:text-slate-400 font-normal leading-tight">
+                              {item.desc}
+                            </p>
+                          </div>
+                        </button>
+                      ))}
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+
+              {/* 6. Alumni & Contact Dropdown */}
+              <div
+                className="relative"
+                onMouseEnter={() => {
+                  setOpenDropdown("alumni");
+                  setHoveredKey("alumni");
+                }}
+                onMouseLeave={() => {
+                  setOpenDropdown(null);
+                  setHoveredKey(null);
+                }}
+              >
+                {/* 2. Contact Us */}
+                <NavItem
+                  hoverKey="contact"
+                  currentHover={hoveredKey}
+                  onMouseEnter={setHoveredKey}
+                  onMouseLeave={() => setHoveredKey(null)}
+                  onClick={() => setActiveTab("contact")}
+                  isActive={activeTab === "contact"}
+                  icon={
+                    <Phone className="w-4 h-4 text-[#4D2EAB] dark:text-indigo-400" />
+                  }
+                >
+                  Contact Us
+                </NavItem>
+
+
+              </div>
+            </div>
+
+            {/* Right Action Triggers - ThemeToggle & Portal Login */}
+            <div className="hidden lg:flex items-center gap-2 shrink-0">
+              <ThemeToggle />
+
+              <a
+                href="https://portal.nfcsunn.org"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-1.5 text-xs font-bold text-white bg-[#4D2EAB] hover:bg-[#3B2285] dark:bg-indigo-600 dark:hover:bg-indigo-500 border border-[#4D2EAB] dark:border-indigo-500 px-3 py-1.5 rounded-full shadow-sm transition-all cursor-pointer hover:scale-105 active:scale-95 whitespace-nowrap"
+                title="NFCS UNN Portal"
+              >
+                <LogIn className="w-3.5 h-3.5 text-white shrink-0" />
+                {!isScrolled && <span>Portal</span>}
+              </a>
+            </div>
+          </NavBody>
+
+          {/* Mobile Header Bar */}
+          <MobileNav>
+            <div className="flex items-center justify-between w-full px-4 py-3 bg-transparent backdrop-blur-md border-b border-transparent shadow-none">
+              <button
+                onClick={() => setActiveTab("home")}
+                className="flex items-center"
+              >
+                <NfcsLogo size={48} />
+              </button>
+
+              <div className="flex items-center gap-2">
+                <ThemeToggle />
+
+                <a
+                  href="https://portal.nfcsunn.org"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-1 px-3 py-1.5 text-xs font-bold text-white bg-[#4D2EAB] dark:bg-indigo-600 rounded-full shadow-xs"
+                >
+                  <LogIn className="w-3.5 h-3.5 text-white" />
+                  Portal
+                </a>
+
+                <button
+                  onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                  className="p-2 rounded-full bg-stone-100 dark:bg-slate-800 text-stone-800 dark:text-slate-200 hover:bg-stone-200 dark:hover:bg-slate-700 transition-colors"
+                  aria-label="Toggle Menu"
+                >
+                  {mobileMenuOpen ? (
+                    <X className="w-5 h-5" />
+                  ) : (
+                    <Menu className="w-5 h-5" />
+                  )}
+                </button>
+              </div>
+            </div>
+
+            {/* Floating Mobile Card Drawer */}
+            <AnimatePresence>
+              {mobileMenuOpen && (
+                <motion.div
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  transition={{ duration: 0.2, ease: "easeInOut" }}
+                  className="w-full bg-white dark:bg-[#080A26] border-b border-stone-200 dark:border-slate-800 shadow-2xl p-4 space-y-4 max-h-[85vh] overflow-y-auto"
+                >
+                  {/* Main Links */}
+                  <div className="space-y-1">
+                    <p className="text-[10px] font-bold uppercase tracking-wider text-stone-400 dark:text-slate-500 px-3">
+                      Navigation
+                    </p>
+                    <button
+                      onClick={() => {
+                        setActiveTab("home");
+                        setMobileMenuOpen(false);
+                      }}
+                      className={`flex items-center gap-3 w-full px-3 py-2.5 rounded-xl text-sm font-semibold text-left ${activeTab === "home"
+                        ? "bg-[#4D2EAB] text-white"
+                        : "text-stone-800 dark:text-slate-200 hover:bg-stone-100 dark:hover:bg-slate-800"
+                        }`}
+                    >
+                      <Home className="w-4 h-4" />
+                      Home
+                    </button>
+
+                    <button
+                      onClick={() => {
+                        setActiveTab("about");
+                        setMobileMenuOpen(false);
+                      }}
+                      className={`flex items-center gap-3 w-full px-3 py-2.5 rounded-xl text-sm font-semibold text-left ${activeTab === "about"
+                        ? "bg-[#4D2EAB] text-white"
+                        : "text-stone-800 dark:text-slate-200 hover:bg-stone-100 dark:hover:bg-slate-800"
+                        }`}
+                    >
+                      <Info className="w-4 h-4" />
+                      About Us
+                    </button>
+                  </div>
+
+                  {/* Spiritual Life */}
+                  <div className="space-y-1 border-t border-stone-100 dark:border-slate-800 pt-3">
+                    <p className="text-[10px] font-bold uppercase tracking-wider text-stone-400 dark:text-slate-500 px-3">
+                      Spiritual Life
+                    </p>
+                    {spiritualMenu.map((item) => (
+                      <button
+                        key={item.id}
+                        onClick={() => {
+                          setActiveTab(item.id);
+                          setMobileMenuOpen(false);
+                        }}
+                        className={`flex items-center gap-3 w-full px-3 py-2 rounded-xl text-xs font-semibold text-left ${activeTab === item.id
+                          ? "bg-[#4D2EAB]/10 text-[#4D2EAB] dark:bg-indigo-950 dark:text-indigo-300 font-bold"
+                          : "text-stone-700 dark:text-slate-300 hover:bg-stone-100 dark:hover:bg-slate-800"
+                          }`}
+                      >
+                        {item.icon}
+                        {item.label}
+                      </button>
+                    ))}
+                  </div>
+
+                  {/* Impact & Events */}
+                  <div className="space-y-1 border-t border-stone-100 dark:border-slate-800 pt-3">
+                    <p className="text-[10px] font-bold uppercase tracking-wider text-stone-400 dark:text-slate-500 px-3">
+                      Impact & Events
+                    </p>
+                    {impactMenu.map((item) => (
+                      <button
+                        key={item.id}
+                        onClick={() => {
+                          setActiveTab(item.id);
+                          setMobileMenuOpen(false);
+                        }}
+                        className={`flex items-center gap-3 w-full px-3 py-2 rounded-xl text-xs font-semibold text-left ${activeTab === item.id
+                          ? "bg-[#4D2EAB]/10 text-[#4D2EAB] dark:bg-indigo-950 dark:text-indigo-300 font-bold"
+                          : "text-stone-700 dark:text-slate-300 hover:bg-stone-100 dark:hover:bg-slate-800"
+                          }`}
+                      >
+                        {item.icon}
+                        {item.label}
+                      </button>
+                    ))}
+                  </div>
+
+                  {/* Media & News */}
+                  <div className="space-y-1 border-t border-stone-100 dark:border-slate-800 pt-3">
+                    <p className="text-[10px] font-bold uppercase tracking-wider text-stone-400 dark:text-slate-500 px-3">
+                      Media & News
+                    </p>
+                    {mediaMenu.map((item) => (
+                      <button
+                        key={item.id}
+                        onClick={() => {
+                          setActiveTab(item.id);
+                          setMobileMenuOpen(false);
+                        }}
+                        className={`flex items-center gap-3 w-full px-3 py-2 rounded-xl text-xs font-semibold text-left ${activeTab === item.id
+                          ? "bg-[#4D2EAB]/10 text-[#4D2EAB] dark:bg-indigo-950 dark:text-indigo-300 font-bold"
+                          : "text-stone-700 dark:text-slate-300 hover:bg-stone-100 dark:hover:bg-slate-800"
+                          }`}
+                      >
+                        {item.icon}
+                        {item.label}
+                      </button>
+                    ))}
+                  </div>
+                  <button
+                    onClick={() => {
+                      setActiveTab("about");
+                      setMobileMenuOpen(false);
+                    }}
+                    className={`flex items-center gap-3 w-full px-3 py-2.5 rounded-xl text-sm font-semibold text-left ${activeTab === "about"
+                      ? "bg-[#4D2EAB] text-white"
+                      : "text-stone-800 dark:text-slate-200 hover:bg-stone-100 dark:hover:bg-slate-800"
+                      }`}
+                  >
+                    <Info className="w-4 h-4" />
+                    About Us
+                  </button>
+
+
+                  {/* Portal Login & Theme Toggle */}
+                  <div className="pt-3 border-t border-stone-100 dark:border-slate-800 flex flex-col gap-2">
+                    <div className="flex items-center justify-between px-2">
+                      <span className="text-xs font-semibold text-stone-600 dark:text-slate-400">
+                        Theme
+                      </span>
+                      <ThemeToggle />
+                    </div>
+
+                    <a
+                      href="https://portal.nfcsunn.org"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      onClick={() => setMobileMenuOpen(false)}
+                      className="w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl text-sm font-semibold text-white bg-[#4D2EAB] dark:bg-indigo-600 shadow-sm"
+                    >
+                      <LogIn className="w-4 h-4 text-white" />
+                      Member Portal (portal.nfcsunn.org)
+                    </a>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </MobileNav>
+        </ResizableNavbar>
+      </header>
+    </>
   );
 };
