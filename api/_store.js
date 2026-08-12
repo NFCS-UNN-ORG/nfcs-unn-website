@@ -5,9 +5,6 @@ import os from 'os';
 const TMP_DIR = process.env.TMPDIR || process.env.TEMP || process.env.TMP || os.tmpdir() || './';
 const FILE_PATH = path.join(TMP_DIR, 'nfcs_leads.json');
 
-const KV_URL = process.env.KV_REST_API_URL || process.env.UPSTASH_REDIS_REST_URL;
-const KV_TOKEN = process.env.KV_REST_API_TOKEN || process.env.UPSTASH_REDIS_REST_TOKEN;
-
 function ensureDir() {
   try {
     if (!fs.existsSync(TMP_DIR)) {
@@ -28,41 +25,60 @@ if (!global._nfcs_leads_cache) {
   } catch (err) {}
 }
 
+function getKvCredentials() {
+  const url = (process.env.KV_REST_API_URL || process.env.UPSTASH_REDIS_REST_URL || process.env.KV_URL || '').trim().replace(/^["']|["']$/g, '');
+  const token = (process.env.KV_REST_API_TOKEN || process.env.UPSTASH_REDIS_REST_TOKEN || process.env.KV_TOKEN || '').trim().replace(/^["']|["']$/g, '');
+  return { url, token };
+}
+
 async function kvFetch(command, ...args) {
-  if (!KV_URL || !KV_TOKEN) return null;
+  const { url, token } = getKvCredentials();
+  if (!url || !token) return null;
+
   try {
-    const url = `${KV_URL.replace(/\/$/, '')}/${command}/${args.map(a => encodeURIComponent(typeof a === 'object' ? JSON.stringify(a) : a)).join('/')}`;
-    const res = await fetch(url, {
+    const cleanUrl = url.replace(/\/$/, '');
+    const res = await fetch(cleanUrl, {
+      method: 'POST',
       headers: {
-        Authorization: `Bearer ${KV_TOKEN}`
-      }
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify([command.toUpperCase(), ...args])
     });
+
     if (res.ok) {
       const json = await res.json();
-      return json.result;
+      return json.result !== undefined ? json.result : null;
+    } else {
+      const errText = await res.text();
+      console.warn(`KV Fetch Error [${command}] (${res.status}):`, errText);
     }
   } catch (err) {
-    console.warn('Vercel KV fetch exception:', err.message);
+    console.warn(`Vercel KV fetch exception [${command}]:`, err.message);
   }
   return null;
 }
 
 export async function getLeads() {
-  // Try Vercel KV REST first if configured
-  if (KV_URL && KV_TOKEN) {
+  const { url: kvUrl, token: kvToken } = getKvCredentials();
+
+  // 1. Try Vercel KV / Upstash Redis first
+  if (kvUrl && kvToken) {
     try {
       const kvData = await kvFetch('get', 'nfcs_training_leads');
-      if (kvData) {
+      if (kvData !== null && kvData !== undefined) {
         const parsed = typeof kvData === 'string' ? JSON.parse(kvData) : kvData;
         if (Array.isArray(parsed)) {
           global._nfcs_leads_cache = parsed;
           return parsed;
         }
       }
-    } catch (e) {}
+    } catch (e) {
+      console.warn('Error reading leads from KV:', e.message);
+    }
   }
 
-  // Fallback to local file / memory cache
+  // 2. Fallback to local file / memory cache
   try {
     ensureDir();
     if (fs.existsSync(FILE_PATH)) {
@@ -86,22 +102,32 @@ export async function saveLead(lead) {
     (l.phone && lead.phone && l.phone === lead.phone)
   );
 
+  const updatedLead = {
+    ...lead,
+    email: lead.email ? lead.email.toLowerCase().trim() : '',
+    submittedAt: lead.submittedAt || new Date().toISOString()
+  };
+
   if (existingIdx >= 0) {
-    leads[existingIdx] = { ...leads[existingIdx], ...lead, updatedAt: new Date().toISOString() };
+    leads[existingIdx] = { ...leads[existingIdx], ...updatedLead, updatedAt: new Date().toISOString() };
   } else {
-    leads.push({ ...lead, submittedAt: lead.submittedAt || new Date().toISOString() });
+    leads.push(updatedLead);
   }
 
   global._nfcs_leads_cache = leads;
 
-  // Persist to Vercel KV if available
-  if (KV_URL && KV_TOKEN) {
+  const { url: kvUrl, token: kvToken } = getKvCredentials();
+
+  // 1. Persist to Vercel KV if available
+  if (kvUrl && kvToken) {
     try {
       await kvFetch('set', 'nfcs_training_leads', JSON.stringify(leads));
-    } catch (e) {}
+    } catch (e) {
+      console.warn('Error saving lead to KV:', e.message);
+    }
   }
 
-  // Persist to local disk fallback
+  // 2. Persist to local disk fallback
   try {
     ensureDir();
     fs.writeFileSync(FILE_PATH, JSON.stringify(leads, null, 2), 'utf8');
