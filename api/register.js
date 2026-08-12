@@ -18,18 +18,19 @@ export default async function handler(req, res) {
   }
 
   let emailSent = false;
+  let emailError = null;
 
-  // Automated Confirmation Email via Resend API (if RESEND_API_KEY configured in Vercel)
+  // Automated Confirmation Email via Resend API
   if (process.env.RESEND_API_KEY) {
     try {
       const emailRes = await fetch('https://api.resend.com/emails', {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${process.env.RESEND_API_KEY}`,
+          'Authorization': `Bearer ${process.env.RESEND_API_KEY.trim()}`,
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-          from: process.env.EMAIL_FROM || 'NFCS UNN Training <onboarding@resend.dev>',
+          from: 'onboarding@resend.dev',
           to: [lead.email],
           subject: '🎉 Your Seat is Reserved! NFCS UNN Email Marketing Training',
           html: `
@@ -53,15 +54,26 @@ export default async function handler(req, res) {
           `
         })
       });
-      if (emailRes.ok) emailSent = true;
+
+      const responseData = await emailRes.json();
+      if (emailRes.ok) {
+        emailSent = true;
+      } else {
+        emailError = responseData.message || JSON.stringify(responseData);
+        console.warn('Resend API error response:', responseData);
+      }
     } catch (err) {
-      console.warn('Resend email dispatch error:', err);
+      emailError = err.message;
+      console.warn('Resend email dispatch exception:', err);
     }
+  } else {
+    emailError = 'RESEND_API_KEY environment variable missing in Vercel settings.';
   }
 
   return res.status(200).json({
     success: true,
     emailSent: emailSent,
+    emailStatus: emailError ? `Error: ${emailError}` : 'Sent successfully',
     message: 'Registration recorded successfully'
   });
 }
