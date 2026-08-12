@@ -1,13 +1,23 @@
 import fs from 'fs';
 import path from 'path';
+import os from 'os';
 
-const TMP_DIR = process.env.TMPDIR || '/tmp';
+const TMP_DIR = process.env.TMPDIR || process.env.TEMP || process.env.TMP || os.tmpdir() || './';
 const FILE_PATH = path.join(TMP_DIR, 'nfcs_leads.json');
+
+function ensureDir() {
+  try {
+    if (!fs.existsSync(TMP_DIR)) {
+      fs.mkdirSync(TMP_DIR, { recursive: true });
+    }
+  } catch (e) {}
+}
 
 // Initialize in-memory cache if not already set
 if (!global._nfcs_leads_cache) {
   global._nfcs_leads_cache = [];
   try {
+    ensureDir();
     if (fs.existsSync(FILE_PATH)) {
       const data = fs.readFileSync(FILE_PATH, 'utf8');
       global._nfcs_leads_cache = JSON.parse(data) || [];
@@ -19,6 +29,7 @@ if (!global._nfcs_leads_cache) {
 
 export function getLeads() {
   try {
+    ensureDir();
     if (fs.existsSync(FILE_PATH)) {
       const data = fs.readFileSync(FILE_PATH, 'utf8');
       const loaded = JSON.parse(data);
@@ -51,6 +62,7 @@ export function saveLead(lead) {
   global._nfcs_leads_cache = leads;
 
   try {
+    ensureDir();
     fs.writeFileSync(FILE_PATH, JSON.stringify(leads, null, 2), 'utf8');
   } catch (err) {
     console.warn('Failed to write leads file store:', err);

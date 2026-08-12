@@ -523,7 +523,8 @@ async function loadLeads(passcode){
   let serverLeads = [];
   try {
     const r = await fetch('/api/leads?code=' + encodeURIComponent(passcode));
-    if(r.ok) {
+    const contentType = r.headers.get('content-type') || '';
+    if(r.ok && contentType.includes('application/json')) {
       const data = await r.json();
       serverLeads = data.leads || [];
     }
@@ -536,6 +537,7 @@ async function loadLeads(passcode){
 
   const combinedMap = new Map();
   [...serverLeads, ...localLeads].forEach(l => {
+    if(!l) return;
     const key = (l.email || l.phone || l.submittedAt || Math.random()).toString().toLowerCase();
     combinedMap.set(key, l);
   });
