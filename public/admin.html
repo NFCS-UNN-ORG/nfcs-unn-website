@@ -593,13 +593,35 @@ function renderLeads(leads){
 
 async function deleteLead(idKey, name){
   if(!confirm(`Are you sure you want to delete registration for "${name}"?`)) return;
-  allLeads = allLeads.filter(l => (l.submittedAt || l.email || l.phone || '') !== idKey);
 
   try {
-    await fetch('/api/leads?code=' + encodeURIComponent(activePasscode) + '&action=delete&idKey=' + encodeURIComponent(idKey), {
-      method: 'POST'
+    const res = await fetch('/api/leads', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        code: activePasscode,
+        action: 'delete',
+        idKey: idKey
+      })
     });
-  } catch(e){}
+
+    if (res.ok) {
+      const data = await res.json();
+      if (data.success && Array.isArray(data.leads)) {
+        allLeads = data.leads;
+      } else {
+        allLeads = allLeads.filter(l => (l.submittedAt || l.email || l.phone || '') !== idKey);
+      }
+    } else {
+      const err = await res.json().catch(() => ({}));
+      alert('Delete failed: ' + (err.error || res.statusText));
+      return;
+    }
+  } catch(e){
+    console.error('Delete exception:', e);
+    alert('Network error while deleting registration.');
+    return;
+  }
 
   updateStats(allLeads);
   renderLeads(allLeads);

@@ -139,7 +139,16 @@ export async function saveLead(lead) {
 export async function deleteLead(idKey) {
   if (!idKey) return await getLeads();
   let leads = await getLeads();
-  leads = leads.filter(l => (l.submittedAt || l.email || l.phone || '') !== idKey);
+  const searchKey = String(idKey).toLowerCase().trim();
+
+  leads = leads.filter(l => {
+    if (!l) return false;
+    const lEmail = (l.email || '').toLowerCase().trim();
+    const lPhone = (l.phone || '').trim();
+    const lTime = (l.submittedAt || '').toLowerCase().trim();
+    return lEmail !== searchKey && lPhone !== searchKey && lTime !== searchKey;
+  });
+
   global._nfcs_leads_cache = leads;
 
   const { url: kvUrl, token: kvToken } = getKvCredentials();

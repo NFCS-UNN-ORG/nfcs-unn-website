@@ -10,7 +10,12 @@ export default async function handler(req, res) {
     return res.status(200).end();
   }
 
-  const { code, idKey, action } = req.method === 'POST' ? req.body : req.query;
+  const body = req.body || {};
+  const query = req.query || {};
+  const code = body.code || query.code;
+  const idKey = body.idKey || query.idKey;
+  const action = body.action || query.action;
+
   const adminSecret = process.env.ADMIN_SECRET_KEY || 'eazi_nation_2026';
 
   if (!code || code !== adminSecret) {
@@ -25,6 +30,7 @@ export default async function handler(req, res) {
     return res.status(200).json({
       success: true,
       message: 'Lead deleted successfully',
+      count: updatedLeads.length,
       leads: updatedLeads
     });
   }
@@ -33,6 +39,7 @@ export default async function handler(req, res) {
 
   return res.status(200).json({
     success: true,
+    count: leads.length,
     leads: leads
   });
 }
