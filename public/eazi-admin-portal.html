@@ -555,6 +555,8 @@ function renderLeads(leads){
     const waPhone = cleanPhoneForWa(l.phone);
     const isUnn = (l.status || '').toLowerCase().includes('unn');
     const isNfcs = (l.nfcs || '').toLowerCase().startsWith('yes');
+    const deleteKey = (l.submittedAt || l.email || l.phone || '').replace(/'/g, "\\'");
+    const nameSafe = (l.name || 'User').replace(/'/g, "\\'");
     return `
       <tr>
         <td><strong>${l.name || ''}</strong></td>
@@ -571,7 +573,7 @@ function renderLeads(leads){
         <td><span class="badge ${l.committed ? 'badge-yes' : 'badge-no'}">${l.committed ? '✓ Yes' : '✕ No'}</span></td>
         <td>${l.submittedAt ? new Date(l.submittedAt).toLocaleString() : ''}</td>
         <td>
-          <button type="button" class="delete-btn" onclick="deleteLead('${(l.email || l.phone || '').replace(/'/g, "\\'")}', '${(l.name || 'User').replace(/'/g, "\\')}')">
+          <button type="button" class="delete-btn" onclick="deleteLead('${deleteKey}', '${nameSafe}')">
             🗑️ Delete
           </button>
         </td>
@@ -582,7 +584,7 @@ function renderLeads(leads){
 
 function deleteLead(idKey, name){
   if(!confirm(`Are you sure you want to delete registration for "${name}"?`)) return;
-  allLeads = allLeads.filter(l => (l.email || l.phone || '') !== idKey);
+  allLeads = allLeads.filter(l => (l.submittedAt || l.email || l.phone || '') !== idKey);
   
   // Persist updated list to localStorage
   try {
