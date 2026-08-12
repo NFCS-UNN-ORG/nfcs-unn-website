@@ -7,7 +7,11 @@
     },
     {
       "source": "/admin",
-      "destination": "/eazi-admin-portal.html"
+      "destination": "/admin.html"
+    },
+    {
+      "source": "/eazi-admin-portal",
+      "destination": "/admin.html"
     }
   ]
 }
