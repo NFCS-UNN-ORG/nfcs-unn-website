@@ -4,6 +4,10 @@
     {
       "source": "/free-training",
       "destination": "/free-training.html"
+    },
+    {
+      "source": "/admin",
+      "destination": "/eazi-admin-portal.html"
     }
   ]
 }
