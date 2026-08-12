@@ -1,3 +1,5 @@
+import { saveLead } from './_store.js';
+
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Credentials', 'true');
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -17,6 +19,9 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: 'Missing required registration fields' });
   }
 
+  // Persist lead to store
+  const updatedLeads = saveLead(lead);
+
   let emailSent = false;
   let emailError = null;
 
@@ -30,7 +35,7 @@ export default async function handler(req, res) {
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-          from: 'onboarding@resend.dev',
+          from: process.env.RESEND_FROM_EMAIL || 'onboarding@resend.dev',
           to: [lead.email],
           subject: '🎉 Your Seat is Reserved! NFCS UNN Email Marketing Training',
           html: `
@@ -72,6 +77,7 @@ export default async function handler(req, res) {
 
   return res.status(200).json({
     success: true,
+    count: updatedLeads.length,
     emailSent: emailSent,
     emailStatus: emailError ? `Error: ${emailError}` : 'Sent successfully',
     message: 'Registration recorded successfully'

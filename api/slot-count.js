@@ -1,4 +1,4 @@
-import { getLeads } from './_store.js';
+import { getSlotCount } from './_store.js';
 
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Credentials', 'true');
@@ -10,17 +10,18 @@ export default async function handler(req, res) {
     return res.status(200).end();
   }
 
-  const { code } = req.query;
-  const adminSecret = process.env.ADMIN_SECRET_KEY || 'eazi_nation_2026';
-
-  if (!code || code !== adminSecret) {
-    return res.status(401).json({ error: 'Unauthorized: Invalid administrative passcode' });
+  if (req.method !== 'GET') {
+    return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  const leads = getLeads();
+  const count = getSlotCount();
+  const TOTAL_SLOTS = 100;
+  const remaining = Math.max(TOTAL_SLOTS - count, 0);
 
   return res.status(200).json({
     success: true,
-    leads: leads
+    count: count,
+    remaining: remaining,
+    total: TOTAL_SLOTS
   });
 }

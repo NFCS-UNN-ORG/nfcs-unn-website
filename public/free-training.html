@@ -1778,20 +1778,26 @@ const WHATSAPP_GROUP_LINK = "https://chat.whatsapp.com/KtTHtgY94PfI6XXR7NKKNt?s=
 document.getElementById('waGroupLink').href = WHATSAPP_GROUP_LINK;
 
 async function updateSlotCounter(){
-  let count = 0;
-  try{
-    const r = await fetch('/api/slot-count');
-    if(r.ok) {
-      const data = await r.json();
-      count = data.count || 0;
-    } else {
-      const localLeads = JSON.parse(localStorage.getItem('nfcs_training_leads') || '[]');
-      count = localLeads.length;
-    }
-  } catch(err){
+  let serverCount = 0;
+  let localCount = 0;
+
+  try {
     const localLeads = JSON.parse(localStorage.getItem('nfcs_training_leads') || '[]');
-    count = localLeads.length;
-  }
+    localCount = localLeads.length;
+  } catch(e){}
+
+  try {
+    const r = await fetch('/api/slot-count');
+    const contentType = r.headers.get('content-type') || '';
+    if(r.ok && contentType.includes('application/json')) {
+      const data = await r.json();
+      if(typeof data.count === 'number') {
+        serverCount = data.count;
+      }
+    }
+  } catch(err){}
+
+  const count = Math.max(serverCount, localCount);
   const remaining = Math.max(TOTAL_SLOTS - count, 0);
   const pct = Math.min((count / TOTAL_SLOTS) * 100, 100);
   const slotText = document.getElementById('slotText');
