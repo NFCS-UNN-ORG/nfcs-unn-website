@@ -136,6 +136,29 @@ export async function saveLead(lead) {
   return leads;
 }
 
+export async function deleteLead(idKey) {
+  if (!idKey) return await getLeads();
+  let leads = await getLeads();
+  leads = leads.filter(l => (l.submittedAt || l.email || l.phone || '') !== idKey);
+  global._nfcs_leads_cache = leads;
+
+  const { url: kvUrl, token: kvToken } = getKvCredentials();
+  if (kvUrl && kvToken) {
+    try {
+      await kvFetch('set', 'nfcs_training_leads', JSON.stringify(leads));
+    } catch (e) {
+      console.warn('Error deleting lead in KV:', e.message);
+    }
+  }
+
+  try {
+    ensureDir();
+    fs.writeFileSync(FILE_PATH, JSON.stringify(leads, null, 2), 'utf8');
+  } catch (err) {}
+
+  return leads;
+}
+
 export async function getSlotCount() {
   const leads = await getLeads();
   return leads.length;

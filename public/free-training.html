@@ -1778,13 +1778,7 @@ const WHATSAPP_GROUP_LINK = "https://chat.whatsapp.com/KtTHtgY94PfI6XXR7NKKNt?s=
 document.getElementById('waGroupLink').href = WHATSAPP_GROUP_LINK;
 
 async function updateSlotCounter(){
-  let serverCount = 0;
-  let localCount = 0;
-
-  try {
-    const localLeads = JSON.parse(localStorage.getItem('nfcs_training_leads') || '[]');
-    localCount = localLeads.length;
-  } catch(e){}
+  let count = 0;
 
   try {
     const r = await fetch('/api/slot-count');
@@ -1792,12 +1786,11 @@ async function updateSlotCounter(){
     if(r.ok && contentType.includes('application/json')) {
       const data = await r.json();
       if(typeof data.count === 'number') {
-        serverCount = data.count;
+        count = data.count;
       }
     }
   } catch(err){}
 
-  const count = Math.max(serverCount, localCount);
   const remaining = Math.max(TOTAL_SLOTS - count, 0);
   const pct = Math.min((count / TOTAL_SLOTS) * 100, 100);
   const slotText = document.getElementById('slotText');
@@ -1911,27 +1904,29 @@ form.addEventListener('submit', async (e) => {
   };
 
   try {
-    await fetch('/api/register', {
+    const res = await fetch('/api/register', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(lead)
     });
+
+    if (!res.ok) {
+      const errData = await res.json().catch(() => ({}));
+      throw new Error(errData.error || `Server status ${res.status}`);
+    }
+
+    // Registration recorded successfully
+    form.style.display = 'none';
+    const successPanel = document.getElementById('successPanel');
+    successPanel.style.display = 'block';
+    successPanel.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    updateSlotCounter();
   } catch(err){
-    console.warn('Backend API endpoint not available. Saving lead to local fallback storage.');
+    console.error('Registration API error:', err);
+    alert('Registration failed: ' + (err.message || 'Server connection error. Please try again.'));
+    submitBtn.disabled = false;
+    submitBtn.textContent = 'Reserve my seat';
   }
-
-  // Save to LocalStorage fallback so submission ALWAYS succeeds
-  try {
-    let localLeads = JSON.parse(localStorage.getItem('nfcs_training_leads') || '[]');
-    localLeads.push(lead);
-    localStorage.setItem('nfcs_training_leads', JSON.stringify(localLeads));
-  } catch(e){}
-
-  form.style.display = 'none';
-  const successPanel = document.getElementById('successPanel');
-  successPanel.style.display = 'block';
-  successPanel.scrollIntoView({ behavior: 'smooth', block: 'center' });
-  updateSlotCounter();
 });
 
 // ---- Share & Social Helpers ----

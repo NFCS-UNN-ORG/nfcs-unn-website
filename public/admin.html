@@ -530,18 +530,7 @@ async function loadLeads(passcode){
     }
   } catch(e){}
 
-  let localLeads = [];
-  try {
-    localLeads = JSON.parse(localStorage.getItem('nfcs_training_leads') || '[]');
-  } catch(e){}
-
-  const combinedMap = new Map();
-  [...serverLeads, ...localLeads].forEach(l => {
-    if(!l) return;
-    const key = (l.email || l.phone || l.submittedAt || Math.random()).toString().toLowerCase();
-    combinedMap.set(key, l);
-  });
-  return Array.from(combinedMap.values());
+  return serverLeads;
 }
 
 function updateStats(leads){
@@ -602,13 +591,14 @@ function renderLeads(leads){
   }).join('');
 }
 
-function deleteLead(idKey, name){
+async function deleteLead(idKey, name){
   if(!confirm(`Are you sure you want to delete registration for "${name}"?`)) return;
   allLeads = allLeads.filter(l => (l.submittedAt || l.email || l.phone || '') !== idKey);
-  
-  // Persist updated list to localStorage
+
   try {
-    localStorage.setItem('nfcs_training_leads', JSON.stringify(allLeads));
+    await fetch('/api/leads?code=' + encodeURIComponent(activePasscode) + '&action=delete&idKey=' + encodeURIComponent(idKey), {
+      method: 'POST'
+    });
   } catch(e){}
 
   updateStats(allLeads);
