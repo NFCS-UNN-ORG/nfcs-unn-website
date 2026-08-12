@@ -5,6 +5,9 @@ import os from 'os';
 const TMP_DIR = process.env.TMPDIR || process.env.TEMP || process.env.TMP || os.tmpdir() || './';
 const FILE_PATH = path.join(TMP_DIR, 'nfcs_leads.json');
 
+const KV_URL = process.env.KV_REST_API_URL || process.env.UPSTASH_REDIS_REST_URL;
+const KV_TOKEN = process.env.KV_REST_API_TOKEN || process.env.UPSTASH_REDIS_REST_TOKEN;
+
 function ensureDir() {
   try {
     if (!fs.existsSync(TMP_DIR)) {
@@ -13,7 +16,7 @@ function ensureDir() {
   } catch (e) {}
 }
 
-// Initialize in-memory cache if not already set
+// In-memory cache initialization
 if (!global._nfcs_leads_cache) {
   global._nfcs_leads_cache = [];
   try {
@@ -22,12 +25,44 @@ if (!global._nfcs_leads_cache) {
       const data = fs.readFileSync(FILE_PATH, 'utf8');
       global._nfcs_leads_cache = JSON.parse(data) || [];
     }
-  } catch (err) {
-    console.warn('Failed to load leads from file store:', err);
-  }
+  } catch (err) {}
 }
 
-export function getLeads() {
+async function kvFetch(command, ...args) {
+  if (!KV_URL || !KV_TOKEN) return null;
+  try {
+    const url = `${KV_URL.replace(/\/$/, '')}/${command}/${args.map(a => encodeURIComponent(typeof a === 'object' ? JSON.stringify(a) : a)).join('/')}`;
+    const res = await fetch(url, {
+      headers: {
+        Authorization: `Bearer ${KV_TOKEN}`
+      }
+    });
+    if (res.ok) {
+      const json = await res.json();
+      return json.result;
+    }
+  } catch (err) {
+    console.warn('Vercel KV fetch exception:', err.message);
+  }
+  return null;
+}
+
+export async function getLeads() {
+  // Try Vercel KV REST first if configured
+  if (KV_URL && KV_TOKEN) {
+    try {
+      const kvData = await kvFetch('get', 'nfcs_training_leads');
+      if (kvData) {
+        const parsed = typeof kvData === 'string' ? JSON.parse(kvData) : kvData;
+        if (Array.isArray(parsed)) {
+          global._nfcs_leads_cache = parsed;
+          return parsed;
+        }
+      }
+    } catch (e) {}
+  }
+
+  // Fallback to local file / memory cache
   try {
     ensureDir();
     if (fs.existsSync(FILE_PATH)) {
@@ -37,17 +72,15 @@ export function getLeads() {
         global._nfcs_leads_cache = loaded;
       }
     }
-  } catch (err) {
-    // Ignore read errors and fall back to memory cache
-  }
+  } catch (err) {}
+
   return global._nfcs_leads_cache || [];
 }
 
-export function saveLead(lead) {
-  if (!lead || (!lead.email && !lead.phone)) return getLeads();
+export async function saveLead(lead) {
+  if (!lead || (!lead.email && !lead.phone)) return await getLeads();
 
-  const leads = getLeads();
-  // Check for duplicate by email or phone
+  const leads = await getLeads();
   const existingIdx = leads.findIndex(l => 
     (l.email && lead.email && l.email.toLowerCase() === lead.email.toLowerCase()) ||
     (l.phone && lead.phone && l.phone === lead.phone)
@@ -61,17 +94,23 @@ export function saveLead(lead) {
 
   global._nfcs_leads_cache = leads;
 
+  // Persist to Vercel KV if available
+  if (KV_URL && KV_TOKEN) {
+    try {
+      await kvFetch('set', 'nfcs_training_leads', JSON.stringify(leads));
+    } catch (e) {}
+  }
+
+  // Persist to local disk fallback
   try {
     ensureDir();
     fs.writeFileSync(FILE_PATH, JSON.stringify(leads, null, 2), 'utf8');
-  } catch (err) {
-    console.warn('Failed to write leads file store:', err);
-  }
+  } catch (err) {}
 
   return leads;
 }
 
-export function getSlotCount() {
-  const leads = getLeads();
+export async function getSlotCount() {
+  const leads = await getLeads();
   return leads.length;
 }

@@ -20,7 +20,7 @@ export default async function handler(req, res) {
   }
 
   // Persist lead to store
-  const updatedLeads = saveLead(lead);
+  const updatedLeads = await saveLead(lead);
 
   let emailSent = false;
   let emailError = null;

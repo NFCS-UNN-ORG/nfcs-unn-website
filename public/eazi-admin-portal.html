@@ -669,12 +669,25 @@ document.getElementById('loginForm').addEventListener('submit', async (e) => {
   }
 });
 
-document.getElementById('adminSearch').addEventListener('input', filterLeads);
-document.getElementById('exportBtn').addEventListener('click', () => exportCSV(allLeads));
-document.getElementById('refreshBtn').addEventListener('click', async () => {
+async function refreshLeadsData() {
+  if (!activePasscode) return;
   allLeads = await loadLeads(activePasscode);
   updateStats(allLeads);
-  renderLeads(allLeads);
+  if (document.getElementById('adminSearch').value.trim()) {
+    filterLeads();
+  } else {
+    renderLeads(allLeads);
+  }
+}
+
+document.getElementById('adminSearch').addEventListener('input', filterLeads);
+document.getElementById('exportBtn').addEventListener('click', () => exportCSV(allLeads));
+document.getElementById('refreshBtn').addEventListener('click', refreshLeadsData);
+
+// Periodic 5-second live polling for real-time lead table sync
+setInterval(refreshLeadsData, 5000);
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'visible' && activePasscode) refreshLeadsData();
 });
 
 document.getElementById('logoutBtn').addEventListener('click', () => {

@@ -1811,6 +1811,12 @@ async function updateSlotCounter(){
 }
 updateSlotCounter();
 
+// Periodic 5-second live polling for real-time slot updates across all visitors
+setInterval(updateSlotCounter, 5000);
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'visible') updateSlotCounter();
+});
+
 const form = document.getElementById('leadForm');
 const submitBtn = document.getElementById('submitBtn');
 
