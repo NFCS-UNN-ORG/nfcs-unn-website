@@ -444,6 +444,9 @@
           <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
           Export CSV
         </button>
+        <button class="admin-btn secondary" id="copyWaBtn" onclick="copyAllWaNumbers()">
+          💬 Copy WA Numbers
+        </button>
         <button class="admin-btn secondary" id="refreshBtn">
           <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
           Refresh
@@ -467,8 +470,8 @@
         <div class="admin-stat-label">NFCSer Members</div>
       </div>
       <div class="admin-stat-card">
-        <div class="admin-stat-val" id="statCommitted">0%</div>
-        <div class="admin-stat-label">Commitment Rate</div>
+        <div class="admin-stat-val" id="statRemaining">100</div>
+        <div class="admin-stat-label">Slots Remaining</div>
       </div>
     </div>
 
@@ -483,7 +486,7 @@
       <table id="leadsTable">
         <thead>
           <tr>
-            <th>Name</th><th>Email</th><th>Phone (WhatsApp)</th><th>Status</th><th>NFCSer</th><th>Department</th><th>Why Join</th><th>Committed</th><th>Submitted</th><th>Action</th>
+            <th>Name</th><th>Email</th><th>Phone (WhatsApp)</th><th>Status</th><th>NFCSer</th><th>Department</th><th>Why Join</th><th>Submitted</th><th>Action</th>
           </tr>
         </thead>
         <tbody id="leadsBody"></tbody>
@@ -519,6 +522,32 @@ function cleanPhoneForWa(p){
   return clean;
 }
 
+function copyAllWaNumbers() {
+  if (!allLeads || allLeads.length === 0) {
+    alert("No registered leads to copy!");
+    return;
+  }
+  const numbers = allLeads
+    .map(l => cleanPhoneForWa(l.phone))
+    .filter(Boolean)
+    .join(', ');
+
+  if (!numbers) {
+    alert("No valid phone numbers found.");
+    return;
+  }
+
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(numbers).then(() => {
+      alert(`Copied ${allLeads.length} WhatsApp phone number(s) to clipboard!\n\nYou can now paste them directly into WhatsApp.`);
+    }).catch(() => {
+      prompt("Copy WhatsApp numbers below:", numbers);
+    });
+  } else {
+    prompt("Copy WhatsApp numbers below:", numbers);
+  }
+}
+
 async function loadLeads(passcode){
   let serverLeads = [];
   try {
@@ -537,13 +566,12 @@ function updateStats(leads){
   const total = leads.length;
   const unnCount = leads.filter(l => (l.status || '').toLowerCase().includes('unn')).length;
   const nfcsCount = leads.filter(l => (l.nfcs || '').toLowerCase().startsWith('yes')).length;
-  const committedCount = leads.filter(l => l.committed).length;
-  const commitRate = total > 0 ? Math.round((committedCount / total) * 100) : 0;
+  const remainingSlots = Math.max(100 - total, 0);
 
   document.getElementById('statTotal').textContent = total;
   document.getElementById('statUnn').textContent = unnCount;
   document.getElementById('statNfcs').textContent = nfcsCount;
-  document.getElementById('statCommitted').textContent = commitRate + '%';
+  document.getElementById('statRemaining').textContent = remainingSlots;
 }
 
 function renderLeads(leads){
@@ -579,7 +607,6 @@ function renderLeads(leads){
         <td><span class="badge ${isNfcs ? 'badge-unn' : 'badge-other'}">${l.nfcs || 'N/A'}</span></td>
         <td>${l.dept || '—'}</td>
         <td class="why-cell" title="${(l.why || '').replace(/"/g, '&quot;')}" onclick="alert(this.title)">${l.why || ''}</td>
-        <td><span class="badge ${l.committed ? 'badge-yes' : 'badge-no'}">${l.committed ? '✓ Yes' : '✕ No'}</span></td>
         <td>${l.submittedAt ? new Date(l.submittedAt).toLocaleString() : ''}</td>
         <td>
           <button type="button" class="delete-btn" onclick="deleteLead('${deleteKey}', '${nameSafe}')">
@@ -628,8 +655,8 @@ async function deleteLead(idKey, name){
 }
 
 function exportCSV(leads){
-  const headers = ['Name','Email','Phone','Status','NFCSer','Department','Why','Committed','Submitted At'];
-  const rows = leads.map(l => [l.name, l.email, l.phone, l.status, l.nfcs, l.dept, l.why, l.committed ? 'Yes':'No', l.submittedAt]);
+  const headers = ['Name','Email','Phone','Status','NFCSer','Department','Why','Submitted At'];
+  const rows = leads.map(l => [l.name, l.email, l.phone, l.status, l.nfcs, l.dept, l.why, l.submittedAt]);
   const csv = [headers.map(csvEscape).join(','), ...rows.map(r => r.map(csvEscape).join(','))].join('\n');
   const blob = new Blob([csv], {type: 'text/csv'});
   const url = URL.createObjectURL(blob);

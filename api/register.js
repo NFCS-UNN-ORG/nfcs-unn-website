@@ -39,22 +39,25 @@ export default async function handler(req, res) {
           to: [lead.email],
           subject: '🎉 Your Seat is Reserved! NFCS UNN Email Marketing Training',
           html: `
-            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 24px; background: #090714; color: #ffffff; border-radius: 16px;">
-              <h2 style="color: #9d6bff; margin-top: 0;">Registration Confirmed!</h2>
-              <p>Hi <strong>${lead.name}</strong>,</p>
-              <p>Your seat for the <strong>3-Day Live Email Marketing Training</strong> (hosted by NFCS UNN & EaziNation) has been successfully reserved.</p>
+            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 32px 24px; background: #ffffff; color: #0f172a; border-radius: 16px; border: 1px solid #e2e8f0; box-shadow: 0 4px 12px rgba(0,0,0,0.05);">
+              <h2 style="color: #6d28d9; margin-top: 0; font-size: 22px; font-weight: bold;">🎉 Registration Confirmed!</h2>
+              <p style="font-size: 15px; line-height: 1.5; color: #334155;">Hi <strong>${lead.name}</strong>,</p>
+              <p style="font-size: 15px; line-height: 1.5; color: #334155;">Your seat for the <strong>3-Day Live Email Marketing Training</strong> (hosted by NFCS UNN & EaziNation) has been successfully reserved.</p>
               
-              <div style="background: #15112b; padding: 18px; border-radius: 12px; border: 1px solid rgba(124, 77, 255, 0.3); margin: 20px 0;">
-                <p style="margin: 6px 0;">📅 <strong>Date:</strong> August 24 – 26, 2026</p>
-                <p style="margin: 6px 0;">⏰ <strong>Time:</strong> 8:00 PM – 10:00 PM (WAT)</p>
-                <p style="margin: 6px 0;">📍 <strong>Venue:</strong> Online Live (Meeting links in WhatsApp Group)</p>
+              <div style="background: #f8fafc; padding: 20px; border-radius: 12px; border: 1px solid #e2e8f0; margin: 24px 0; color: #1e293b;">
+                <p style="margin: 6px 0; font-size: 14.5px;">📅 <strong>Date:</strong> August 24 – 26, 2026</p>
+                <p style="margin: 6px 0; font-size: 14.5px;">⏰ <strong>Time:</strong> 8:00 PM – 10:00 PM (WAT)</p>
+                <p style="margin: 6px 0; font-size: 14.5px;">📍 <strong>Venue:</strong> Online Live (Meeting links posted in WhatsApp Group)</p>
               </div>
 
-              <p style="margin-bottom: 24px;">Tap below to join the official WhatsApp Group for live session links & class materials:</p>
-              <a href="https://chat.whatsapp.com/KtTHtgY94PfI6XXR7NKKNt?s=em&p=a&ilr=0" target="_blank" style="display: inline-block; background: #25d366; color: #ffffff; font-weight: bold; text-decoration: none; padding: 14px 24px; border-radius: 12px;">Join Official WhatsApp Group →</a>
+              <p style="margin-bottom: 20px; font-size: 15px; color: #334155;">Tap the button below right now to join the official WhatsApp Group for live session links & class materials:</p>
+              
+              <div style="text-align: center; margin: 28px 0;">
+                <a href="https://chat.whatsapp.com/KtTHtgY94PfI6XXR7NKKNt?s=em&p=a&ilr=0" target="_blank" style="display: inline-block; background: #25d366; color: #ffffff; font-weight: bold; text-decoration: none; padding: 14px 28px; border-radius: 12px; font-size: 15px; box-shadow: 0 4px 10px rgba(37,211,102,0.3);">Join Official WhatsApp Group →</a>
+              </div>
 
-              <hr style="border: none; border-top: 1px solid rgba(255,255,255,0.1); margin: 30px 0;" />
-              <p style="font-size: 12px; color: #94a3b8;">Organized by EaziNation (Digital Skills Trainer) & NFCS UNN.</p>
+              <hr style="border: none; border-top: 1px solid #e2e8f0; margin: 30px 0;" />
+              <p style="font-size: 12px; color: #64748b; text-align: center; margin: 0;">Organized by EaziNation (Digital Skills Trainer) & NFCS UNN.</p>
             </div>
           `
         })
