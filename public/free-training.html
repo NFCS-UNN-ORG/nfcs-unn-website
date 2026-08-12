@@ -1,0 +1,1700 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Email Marketing Training — Reserve Your Seat | NFCS UNN</title>
+<meta name="description" content="Join the free 3-day Email Marketing Training organized by NFCS UNN & EaziNation. Learn email campaigns, automation, list building, and newsletter design live.">
+
+<!-- Google Fonts -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
+
+<style>
+  :root {
+    --bg-dark: #090714;
+    --bg-card: rgba(21, 17, 43, 0.75);
+    --bg-card-solid: #15112b;
+    --bg-card-hover: #1c1740;
+    --bg-input: #110d24;
+    
+    --violet-primary: #7c4dff;
+    --violet-bright: #9d6bff;
+    --violet-glow: rgba(124, 77, 255, 0.35);
+    --pink-accent: #ec4899;
+    
+    --gold: #f59e0b;
+    --gold-light: #fbbf24;
+    --gold-glow: rgba(245, 158, 11, 0.2);
+    
+    --green-success: #10b981;
+    --green-wa: #25d366;
+    --green-wa-hover: #20bd5a;
+    
+    --text-main: #f8fafc;
+    --text-muted: #94a3b8;
+    --text-dim: #64748b;
+    --border-color: rgba(124, 77, 255, 0.2);
+    --border-focus: rgba(157, 107, 255, 0.6);
+    --border-subtle: rgba(255, 255, 255, 0.08);
+
+    --font-heading: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+    --font-body: 'Inter', system-ui, -apple-system, sans-serif;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background-color: var(--bg-dark);
+    color: var(--text-main);
+    font-family: var(--font-body);
+    min-height: 100vh;
+    line-height: 1.5;
+    position: relative;
+    overflow-x: hidden;
+  }
+
+  /* Ambient Glow Backgrounds */
+  .bg-glow-1 {
+    position: fixed;
+    top: -150px;
+    left: -150px;
+    width: 500px;
+    height: 500px;
+    background: radial-gradient(circle, rgba(124, 77, 255, 0.22), transparent 70%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .bg-glow-2 {
+    position: fixed;
+    bottom: -150px;
+    right: -150px;
+    width: 600px;
+    height: 600px;
+    background: radial-gradient(circle, rgba(236, 72, 153, 0.15), transparent 70%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .bg-glow-3 {
+    position: fixed;
+    top: 40%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 800px;
+    height: 800px;
+    background: radial-gradient(circle, rgba(245, 158, 11, 0.06), transparent 70%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .wrap {
+    max-width: 1160px;
+    margin: 0 auto;
+    padding: 24px 20px 80px;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* Header Branding */
+  .brand-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-bottom: 24px;
+    margin-bottom: 32px;
+    border-bottom: 1px solid var(--border-subtle);
+  }
+
+  .brand-badge {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .brand-logo-img {
+    height: 40px;
+    width: auto;
+    object-fit: contain;
+    filter: drop-shadow(0 2px 8px rgba(124, 77, 255, 0.3));
+  }
+
+  .brand-logo-text {
+    font-family: var(--font-heading);
+    font-weight: 800;
+    font-size: 18px;
+    letter-spacing: -0.02em;
+    color: var(--text-main);
+  }
+
+  .brand-logo-text span {
+    color: var(--violet-bright);
+  }
+
+  .organizer-tag {
+    font-size: 12px;
+    color: var(--text-muted);
+    background: rgba(255, 255, 255, 0.05);
+    padding: 6px 14px;
+    border-radius: 99px;
+    border: 1px solid var(--border-subtle);
+  }
+
+  /* Main Grid */
+  .main-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 40px;
+  }
+
+  @media (min-width: 1024px) {
+    .main-grid {
+      grid-template-columns: 1.15fr 0.85fr;
+      gap: 48px;
+      align-items: start;
+    }
+  }
+
+  /* Hero & Content Column */
+  .eyebrow-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-family: var(--font-heading);
+    font-size: 12px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--gold);
+    font-weight: 700;
+    background: rgba(245, 158, 11, 0.1);
+    border: 1px solid rgba(245, 158, 11, 0.3);
+    padding: 6px 14px;
+    border-radius: 99px;
+    margin-bottom: 20px;
+  }
+
+  .pulse-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background-color: var(--gold);
+    box-shadow: 0 0 0 rgba(245, 158, 11, 0.7);
+    animation: pulse-ring 1.8s infinite;
+  }
+
+  @keyframes pulse-ring {
+    0% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.7); }
+    70% { box-shadow: 0 0 0 8px rgba(245, 158, 11, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0); }
+  }
+
+  h1 {
+    font-family: var(--font-heading);
+    font-size: 36px;
+    line-height: 1.12;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    margin-bottom: 16px;
+  }
+
+  @media (min-width: 768px) {
+    h1 { font-size: 46px; }
+  }
+
+  h1 .accent {
+    background: linear-gradient(135deg, var(--text-main) 0%, var(--violet-bright) 50%, var(--pink-accent) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    display: block;
+  }
+
+  .tagline {
+    color: var(--text-muted);
+    font-size: 16px;
+    line-height: 1.6;
+    margin-bottom: 28px;
+    max-width: 54ch;
+  }
+
+  @media (min-width: 768px) {
+    .tagline { font-size: 17px; }
+  }
+
+  /* Training Flyer Showcase Card */
+  .flyer-card {
+    position: relative;
+    border-radius: 20px;
+    overflow: hidden;
+    border: 1px solid var(--border-color);
+    background: var(--bg-card);
+    box-shadow: 0 16px 36px rgba(0, 0, 0, 0.4);
+    margin-bottom: 28px;
+    transition: transform 0.3s ease, border-color 0.3s ease;
+  }
+
+  .flyer-card:hover {
+    transform: translateY(-3px);
+    border-color: rgba(157, 107, 255, 0.5);
+  }
+
+  .flyer-img {
+    width: 100%;
+    height: auto;
+    display: block;
+    object-fit: cover;
+  }
+
+  .flyer-badge {
+    position: absolute;
+    top: 14px;
+    right: 14px;
+    background: rgba(9, 7, 20, 0.82);
+    backdrop-filter: blur(8px);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    color: var(--gold-light);
+    font-size: 11px;
+    font-family: var(--font-heading);
+    font-weight: 700;
+    padding: 5px 12px;
+    border-radius: 99px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
+  /* Meta Row Chips */
+  .meta-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+    gap: 12px;
+    margin-bottom: 28px;
+  }
+
+  /* Countdown Timer */
+  .countdown-wrap {
+    background: var(--bg-card);
+    backdrop-filter: blur(12px);
+    border: 1px solid var(--border-color);
+    border-radius: 18px;
+    padding: 20px;
+    margin-bottom: 28px;
+    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.3);
+  }
+
+  .countdown-header {
+    font-family: var(--font-heading);
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--gold-light);
+    margin-bottom: 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .countdown-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+  }
+
+  .countdown-box {
+    background: var(--bg-input);
+    border: 1px solid var(--border-subtle);
+    border-radius: 14px;
+    padding: 12px 8px;
+    text-align: center;
+  }
+
+  .count-num {
+    font-family: var(--font-heading);
+    font-size: 26px;
+    font-weight: 800;
+    color: var(--text-main);
+    line-height: 1.1;
+    background: linear-gradient(180deg, #ffffff 0%, var(--violet-bright) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  @media (min-width: 768px) {
+    .count-num { font-size: 30px; }
+  }
+
+  .count-unit {
+    font-size: 10.5px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--text-muted);
+    font-weight: 600;
+    margin-top: 4px;
+    display: block;
+  }
+
+  .meta-chip {
+    background: var(--bg-card);
+    backdrop-filter: blur(12px);
+    border: 1px solid var(--border-color);
+    padding: 12px 16px;
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    transition: transform 0.2s ease, border-color 0.2s ease;
+  }
+
+  .meta-chip:hover {
+    transform: translateY(-2px);
+    border-color: rgba(124, 77, 255, 0.4);
+  }
+
+  .meta-icon {
+    width: 20px;
+    height: 20px;
+    color: var(--violet-bright);
+    flex-shrink: 0;
+  }
+
+  .meta-info {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .meta-label {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--text-muted);
+    font-weight: 600;
+  }
+
+  .meta-val {
+    font-size: 13.5px;
+    font-weight: 700;
+    color: var(--text-main);
+    font-family: var(--font-heading);
+  }
+
+  .meta-val.gold { color: var(--gold-light); }
+
+  /* Slot Counter Box */
+  .slot-counter {
+    background: linear-gradient(135deg, rgba(245, 158, 11, 0.12), rgba(124, 77, 255, 0.08));
+    border: 1px solid rgba(245, 158, 11, 0.35);
+    border-radius: 16px;
+    padding: 18px 20px;
+    margin-bottom: 36px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+  }
+
+  .slot-counter-text {
+    font-family: var(--font-heading);
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--gold-light);
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .slot-bar-track {
+    height: 8px;
+    border-radius: 99px;
+    background: rgba(255, 255, 255, 0.1);
+    overflow: hidden;
+    position: relative;
+  }
+
+  .slot-bar-fill {
+    height: 100%;
+    border-radius: 99px;
+    background: linear-gradient(90deg, var(--gold), var(--gold-light));
+    box-shadow: 0 0 12px rgba(245, 158, 11, 0.5);
+    transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  /* Why / Curriculum Section */
+  .why-section {
+    margin-top: 10px;
+  }
+
+  .section-title {
+    font-family: var(--font-heading);
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    color: var(--text-muted);
+    margin-bottom: 16px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .section-title::after {
+    content: "";
+    flex: 1;
+    height: 1px;
+    background: var(--border-subtle);
+  }
+
+  .why-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+
+  @media (min-width: 600px) {
+    .why-grid {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+
+  .why-card {
+    background: var(--bg-card);
+    backdrop-filter: blur(12px);
+    border: 1px solid var(--border-color);
+    border-radius: 16px;
+    padding: 18px 20px;
+    transition: all 0.25s ease;
+  }
+
+  .why-card:hover {
+    background: var(--bg-card-hover);
+    border-color: rgba(157, 107, 255, 0.4);
+    transform: translateY(-3px);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+  }
+
+  .why-icon-wrap {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    background: rgba(124, 77, 255, 0.15);
+    border: 1px solid rgba(124, 77, 255, 0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--violet-bright);
+    margin-bottom: 12px;
+  }
+
+  .why-card .label {
+    font-family: var(--font-heading);
+    font-weight: 700;
+    font-size: 15px;
+    margin-bottom: 4px;
+    color: var(--text-main);
+  }
+
+  .why-card .desc {
+    font-size: 13px;
+    color: var(--text-muted);
+    line-height: 1.45;
+  }
+
+  /* Form Column / Card */
+  .form-card-wrap {
+    position: relative;
+  }
+
+  @media (min-width: 1024px) {
+    .form-card-wrap {
+      position: sticky;
+      top: 32px;
+    }
+  }
+
+  .form-card {
+    background: var(--bg-card);
+    backdrop-filter: blur(16px);
+    border: 1px solid rgba(124, 77, 255, 0.3);
+    border-radius: 24px;
+    padding: 32px 28px;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4), 0 0 30px rgba(124, 77, 255, 0.15);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .form-card::before {
+    content: "";
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, var(--violet-primary), var(--violet-bright), var(--pink-accent));
+  }
+
+  .form-header {
+    margin-bottom: 24px;
+  }
+
+  .form-header h2 {
+    font-family: var(--font-heading);
+    font-size: 22px;
+    font-weight: 800;
+    color: var(--text-main);
+    margin-bottom: 6px;
+    letter-spacing: -0.01em;
+  }
+
+  .form-sub {
+    color: var(--text-muted);
+    font-size: 13.5px;
+    line-height: 1.5;
+  }
+
+  .field {
+    margin-bottom: 18px;
+  }
+
+  label {
+    display: block;
+    font-size: 13px;
+    font-weight: 600;
+    margin-bottom: 7px;
+    color: var(--text-main);
+  }
+
+  input[type="text"],
+  input[type="email"],
+  input[type="tel"],
+  select,
+  textarea {
+    width: 100%;
+    padding: 14px 16px;
+    border-radius: 12px;
+    border: 1px solid var(--border-subtle);
+    background: var(--bg-input);
+    color: var(--text-main);
+    font-size: 14.5px;
+    font-family: var(--font-body);
+    outline: none;
+    transition: all 0.2s ease;
+  }
+
+  textarea {
+    resize: vertical;
+    min-height: 90px;
+    line-height: 1.5;
+  }
+
+  input::placeholder, textarea::placeholder {
+    color: #524e75;
+  }
+
+  input:focus, select:focus, textarea:focus {
+    border-color: var(--violet-bright);
+    box-shadow: 0 0 0 4px var(--violet-glow);
+    background: #15102d;
+  }
+
+  .error {
+    color: #f87171;
+    font-size: 12px;
+    margin-top: 6px;
+    display: none;
+    font-weight: 500;
+  }
+
+  .field.invalid input,
+  .field.invalid select,
+  .field.invalid textarea,
+  .field.invalid .dropdown-toggle {
+    border-color: #f87171;
+    background: rgba(248, 113, 113, 0.05);
+  }
+
+  .field.invalid .error {
+    display: block;
+  }
+
+  /* Custom dropdown */
+  .dropdown {
+    position: relative;
+  }
+
+  .dropdown-toggle {
+    width: 100%;
+    text-align: left;
+    padding: 14px 42px 14px 16px;
+    border-radius: 12px;
+    border: 1px solid var(--border-subtle);
+    background: var(--bg-input);
+    color: var(--text-muted);
+    font-size: 14.5px;
+    font-family: var(--font-body);
+    cursor: pointer;
+    position: relative;
+    transition: all 0.2s ease;
+  }
+
+  .dropdown-toggle.has-value {
+    color: var(--text-main);
+  }
+
+  .dropdown-toggle::after {
+    content: "";
+    position: absolute;
+    right: 18px; top: 50%;
+    width: 8px; height: 8px;
+    border-right: 2px solid var(--text-muted);
+    border-bottom: 2px solid var(--text-muted);
+    transform: translateY(-65%) rotate(45deg);
+    transition: transform 0.2s ease;
+  }
+
+  .dropdown.open .dropdown-toggle::after {
+    transform: translateY(-35%) rotate(-135deg);
+  }
+
+  .dropdown.open .dropdown-toggle {
+    border-color: var(--violet-bright);
+    box-shadow: 0 0 0 4px var(--violet-glow);
+  }
+
+  .dropdown-menu {
+    position: absolute;
+    top: calc(100% + 6px);
+    left: 0; right: 0;
+    background: #1a1538;
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    box-shadow: 0 16px 36px rgba(0,0,0,0.5);
+    overflow: hidden;
+    z-index: 50;
+    display: none;
+  }
+
+  .dropdown.open .dropdown-menu {
+    display: block;
+    animation: fadeInDown 0.15s ease-out;
+  }
+
+  @keyframes fadeInDown {
+    from { opacity: 0; transform: translateY(-8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .dropdown-option {
+    padding: 13px 16px;
+    font-size: 14px;
+    color: var(--text-main);
+    cursor: pointer;
+    transition: background 0.15s;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .dropdown-option:hover, .dropdown-option.active {
+    background: rgba(124, 77, 255, 0.25);
+    color: #fff;
+  }
+
+  .dropdown-option + .dropdown-option {
+    border-top: 1px solid var(--border-subtle);
+  }
+
+  /* Custom Checkbox Field */
+  .checkbox-field {
+    background: var(--bg-input);
+    border: 1px solid var(--border-subtle);
+    border-radius: 12px;
+    padding: 14px 16px;
+    transition: border-color 0.2s;
+  }
+
+  .checkbox-label {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    margin: 0;
+    font-size: 13.5px;
+    font-weight: 500;
+    color: var(--text-main);
+    cursor: pointer;
+    line-height: 1.45;
+  }
+
+  .checkbox-label input {
+    width: 20px;
+    height: 20px;
+    margin-top: 1px;
+    accent-color: var(--violet-bright);
+    flex-shrink: 0;
+    cursor: pointer;
+  }
+
+  /* Submit Button */
+  button[type="submit"] {
+    width: 100%;
+    padding: 16px;
+    border: none;
+    border-radius: 14px;
+    background: linear-gradient(135deg, var(--violet-bright), var(--violet-primary));
+    color: white;
+    font-family: var(--font-heading);
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+    margin-top: 8px;
+    box-shadow: 0 10px 25px rgba(124, 77, 255, 0.4);
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+  }
+
+  button[type="submit"]:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 14px 30px rgba(124, 77, 255, 0.5);
+    background: linear-gradient(135deg, #ab7cff, #8757ff);
+  }
+
+  button[type="submit"]:active {
+    transform: translateY(0);
+  }
+
+  button[type="submit"]:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+  }
+
+  .fine-print {
+    text-align: center;
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-top: 16px;
+    line-height: 1.4;
+  }
+
+  /* Success Panel */
+  .success {
+    display: none;
+    padding: 24px 12px;
+    text-align: center;
+    animation: fadeIn 0.3s ease;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: scale(0.96); }
+    to { opacity: 1; transform: scale(1); }
+  }
+
+  .success .check-icon-wrap {
+    width: 76px;
+    height: 76px;
+    border-radius: 50%;
+    background: rgba(16, 185, 129, 0.15);
+    border: 2px solid var(--green-success);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 20px;
+    color: var(--green-success);
+    box-shadow: 0 0 30px rgba(16, 185, 129, 0.35);
+  }
+
+  .success h2 {
+    font-family: var(--font-heading);
+    font-size: 26px;
+    font-weight: 800;
+    margin-bottom: 10px;
+    color: var(--text-main);
+  }
+
+  .success p {
+    color: var(--text-muted);
+    font-size: 14.5px;
+    line-height: 1.55;
+    margin-bottom: 24px;
+  }
+
+  .wa-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    width: 100%;
+    padding: 18px 24px;
+    background: linear-gradient(135deg, var(--green-wa), var(--green-wa-hover));
+    color: white;
+    text-decoration: none;
+    font-family: var(--font-heading);
+    font-weight: 800;
+    font-size: 16.5px;
+    border-radius: 16px;
+    box-shadow: 0 12px 30px rgba(37, 211, 102, 0.4);
+    transition: all 0.25s ease;
+    letter-spacing: -0.01em;
+  }
+
+  .wa-btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 16px 36px rgba(37, 211, 102, 0.55);
+    background: linear-gradient(135deg, #2ae16f, #1eab52);
+  }
+
+  .wa-note {
+    font-size: 12px;
+    color: var(--text-dim);
+    margin-top: 14px;
+  }
+
+  /* Footer */
+  .footer-brand {
+    text-align: center;
+    margin-top: 48px;
+    padding-top: 24px;
+    border-top: 1px solid var(--border-subtle);
+    color: var(--text-muted);
+    font-size: 13px;
+  }
+
+  .footer-brand b { color: var(--text-main); }
+  .footer-brand .nation { color: var(--violet-bright); font-weight: 700; }
+
+  /* Admin View Dashboard */
+  #adminView {
+    display: none;
+    padding: 32px 20px 80px;
+    max-width: 1200px;
+    margin: 0 auto;
+    position: relative;
+    z-index: 10;
+  }
+
+  .admin-card {
+    background: var(--bg-card-solid);
+    border: 1px solid var(--border-color);
+    border-radius: 24px;
+    padding: 32px;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+  }
+
+  .admin-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+    gap: 16px;
+  }
+
+  .admin-header h1 {
+    font-family: var(--font-heading);
+    font-size: 26px;
+    font-weight: 800;
+    margin: 0;
+  }
+
+  .admin-count {
+    color: var(--text-muted);
+    font-size: 14px;
+    margin-top: 2px;
+  }
+
+  .admin-btn {
+    background: linear-gradient(135deg, var(--violet-bright), var(--violet-primary));
+    color: white;
+    border: none;
+    padding: 12px 20px;
+    border-radius: 12px;
+    font-family: var(--font-heading);
+    font-size: 13.5px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .admin-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 8px 20px rgba(124, 77, 255, 0.4);
+  }
+
+  .admin-btn.secondary {
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid var(--border-subtle);
+    color: var(--text-main);
+  }
+
+  .admin-btn.secondary:hover {
+    background: rgba(255, 255, 255, 0.12);
+    box-shadow: none;
+  }
+
+  /* Admin KPI Cards */
+  .admin-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 16px;
+    margin-bottom: 24px;
+  }
+
+  .admin-stat-card {
+    background: var(--bg-input);
+    border: 1px solid var(--border-subtle);
+    border-radius: 16px;
+    padding: 18px 20px;
+  }
+
+  .admin-stat-val {
+    font-family: var(--font-heading);
+    font-size: 28px;
+    font-weight: 800;
+    color: var(--violet-bright);
+  }
+
+  .admin-stat-label {
+    font-size: 12px;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    font-weight: 600;
+    margin-top: 4px;
+  }
+
+  /* Search & Toolbar */
+  .admin-controls {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+  }
+
+  .search-box {
+    position: relative;
+    flex: 1;
+    min-width: 260px;
+  }
+
+  .search-box input {
+    width: 100%;
+    padding: 12px 16px 12px 42px;
+    border-radius: 12px;
+    border: 1px solid var(--border-subtle);
+    background: var(--bg-input);
+    color: var(--text-main);
+    font-size: 14px;
+    outline: none;
+  }
+
+  .search-box input:focus {
+    border-color: var(--violet-bright);
+    box-shadow: 0 0 0 3px var(--violet-glow);
+  }
+
+  .search-icon {
+    position: absolute;
+    left: 14px; top: 50%;
+    transform: translateY(-50%);
+    width: 18px; height: 18px;
+    color: var(--text-muted);
+    pointer-events: none;
+  }
+
+  .admin-toolbar {
+    display: flex;
+    gap: 12px;
+  }
+
+  .table-wrap {
+    overflow-x: auto;
+    border: 1px solid var(--border-subtle);
+    border-radius: 16px;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13.5px;
+    text-align: left;
+  }
+
+  th, td {
+    padding: 14px 18px;
+    border-bottom: 1px solid var(--border-subtle);
+    white-space: nowrap;
+  }
+
+  th {
+    background: rgba(0, 0, 0, 0.3);
+    color: var(--text-muted);
+    font-family: var(--font-heading);
+    font-weight: 700;
+    text-transform: uppercase;
+    font-size: 11px;
+    letter-spacing: 0.08em;
+  }
+
+  tr:hover {
+    background: rgba(255, 255, 255, 0.025);
+  }
+
+  .badge {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 99px;
+    font-size: 11.5px;
+    font-weight: 600;
+  }
+
+  .badge-unn { background: rgba(124, 77, 255, 0.2); color: var(--violet-bright); border: 1px solid rgba(124, 77, 255, 0.4); }
+  .badge-other { background: rgba(245, 158, 11, 0.2); color: var(--gold-light); border: 1px solid rgba(245, 158, 11, 0.4); }
+  .badge-yes { background: rgba(16, 185, 129, 0.2); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.4); }
+  .badge-no { background: rgba(239, 68, 68, 0.2); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.4); }
+
+  .wa-link {
+    color: var(--green-wa);
+    text-decoration: none;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .wa-link:hover {
+    text-decoration: underline;
+  }
+
+  .why-cell {
+    max-width: 260px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    cursor: pointer;
+  }
+
+  .empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--text-muted);
+  }
+</style>
+</head>
+<body>
+
+<div class="bg-glow-1"></div>
+<div class="bg-glow-2"></div>
+<div class="bg-glow-3"></div>
+
+<div class="wrap">
+
+  <!-- Header -->
+  <header class="brand-header">
+    <div class="brand-badge">
+      <img src="nfcs-unn-logo.png" alt="NFCS UNN Logo" class="brand-logo-img">
+      <div class="brand-logo-text">NFCS <span>UNN</span></div>
+    </div>
+    <div class="organizer-tag">Digital Skills Training</div>
+  </header>
+
+  <!-- Main Grid -->
+  <div class="main-grid">
+
+    <!-- Left Column: Hero & Benefits -->
+    <div class="hero-column">
+      <div class="eyebrow-pill">
+        <span class="pulse-dot"></span>
+        3 Days · Free Live Training
+      </div>
+
+      <h1>Email Marketing <span class="accent">Reserve your seat</span></h1>
+
+      <p class="tagline">
+        Reach the right inbox, build real audience trust, and convert subscribers into buyers — master the practical email workflow in three interactive live sessions.
+      </p>
+
+      <!-- Training Flyer Card -->
+      <div class="flyer-card">
+        <div class="flyer-badge">Training Flyer</div>
+        <img src="training-flyer.jpg" alt="Email Marketing Training Flyer" class="flyer-img" onerror="this.parentElement.style.display='none'">
+      </div>
+
+      <!-- Meta Chips -->
+      <div class="meta-grid">
+        <div class="meta-chip">
+          <svg class="meta-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+          <div class="meta-info">
+            <span class="meta-label">Date</span>
+            <span class="meta-val gold">24–26 Aug 2026</span>
+          </div>
+        </div>
+
+        <div class="meta-chip">
+          <svg class="meta-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+          <div class="meta-info">
+            <span class="meta-label">Time</span>
+            <span class="meta-val">Time TBD</span>
+          </div>
+        </div>
+
+        <div class="meta-chip">
+          <svg class="meta-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
+          <div class="meta-info">
+            <span class="meta-label">Host</span>
+            <span class="meta-val">NFCS UNN</span>
+          </div>
+        </div>
+
+        <div class="meta-chip">
+          <svg class="meta-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+          <div class="meta-info">
+            <span class="meta-label">Fee</span>
+            <span class="meta-val gold">100% Free</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Countdown Timer -->
+      <div class="countdown-wrap">
+        <div class="countdown-header">
+          <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+          Training Starts In
+        </div>
+        <div class="countdown-grid">
+          <div class="countdown-box">
+            <span class="count-num" id="cdDays">00</span>
+            <span class="count-unit">Days</span>
+          </div>
+          <div class="countdown-box">
+            <span class="count-num" id="cdHours">00</span>
+            <span class="count-unit">Hours</span>
+          </div>
+          <div class="countdown-box">
+            <span class="count-num" id="cdMins">00</span>
+            <span class="count-unit">Mins</span>
+          </div>
+          <div class="countdown-box">
+            <span class="count-num" id="cdSecs">00</span>
+            <span class="count-unit">Secs</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Live Slot Counter -->
+      <div class="slot-counter">
+        <div class="slot-counter-text">
+          <span id="slotText">Loading slots…</span>
+        </div>
+        <div class="slot-bar-track">
+          <div class="slot-bar-fill" id="slotBar" style="width:0%"></div>
+        </div>
+      </div>
+
+      <!-- Curriculum -->
+      <div class="why-section">
+        <div class="section-title">What you'll master in 3 days</div>
+        <div class="why-grid">
+
+          <div class="why-card">
+            <div class="why-icon-wrap">
+              <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+            </div>
+            <div class="label">Email Campaigns</div>
+            <div class="desc">Plan, write, and broadcast high-converting emails that get opened and clicked.</div>
+          </div>
+
+          <div class="why-card">
+            <div class="why-icon-wrap">
+              <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+            </div>
+            <div class="label">Email Automation</div>
+            <div class="desc">Set up welcome sequences and automated funnels that engage leads 24/7.</div>
+          </div>
+
+          <div class="why-card">
+            <div class="why-icon-wrap">
+              <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
+            </div>
+            <div class="label">List Building</div>
+            <div class="desc">Attract quality leads and segment your email list for maximum relevance.</div>
+          </div>
+
+          <div class="why-card">
+            <div class="why-icon-wrap">
+              <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+            </div>
+            <div class="label">Newsletter Design</div>
+            <div class="desc">Format beautiful, responsive emails people actually look forward to reading.</div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- Right Column: Registration Card -->
+    <div class="form-card-wrap">
+      <div class="form-card">
+        
+        <form id="leadForm" novalidate>
+          <div class="form-header">
+            <h2>Save your spot</h2>
+            <p class="form-sub">Takes under a minute. Joining links and updates will be sent to your WhatsApp/email.</p>
+          </div>
+
+          <div class="field" id="f-name">
+            <label for="name">Full name</label>
+            <input type="text" id="name" placeholder="e.g. Chidera Okafor" autocomplete="name">
+            <div class="error">Please enter your full name.</div>
+          </div>
+
+          <div class="field" id="f-email">
+            <label for="email">Email address</label>
+            <input type="email" id="email" placeholder="you@example.com" autocomplete="email">
+            <div class="error">Please enter a valid email address.</div>
+          </div>
+
+          <div class="field" id="f-phone">
+            <label for="phone">WhatsApp number</label>
+            <input type="tel" id="phone" placeholder="e.g. 0803 123 4567" autocomplete="tel">
+            <div class="error">Please enter a valid phone number.</div>
+          </div>
+
+          <div class="field" id="f-status">
+            <label>Are you a UNN student?</label>
+            <div class="dropdown" data-field="status">
+              <button type="button" class="dropdown-toggle" id="statusToggle">Choose an option</button>
+              <div class="dropdown-menu" id="statusMenu">
+                <div class="dropdown-option" data-value="UNN student">Yes, UNN student</div>
+                <div class="dropdown-option" data-value="Other student">Student, other institution</div>
+                <div class="dropdown-option" data-value="Not a student">Not a student</div>
+              </div>
+            </div>
+            <input type="hidden" id="status">
+            <div class="error">Please select an option.</div>
+          </div>
+
+          <div class="field" id="f-nfcs">
+            <label>Are you an NFCSer?</label>
+            <div class="dropdown" data-field="nfcs">
+              <button type="button" class="dropdown-toggle" id="nfcsToggle">Choose an option</button>
+              <div class="dropdown-menu" id="nfcsMenu">
+                <div class="dropdown-option" data-value="Yes, I'm an NFCSer">Yes, I'm an NFCSer</div>
+                <div class="dropdown-option" data-value="No, not an NFCSer">No, not an NFCSer</div>
+                <div class="dropdown-option" data-value="Not sure what NFCS is">Not sure what NFCS is</div>
+              </div>
+            </div>
+            <input type="hidden" id="nfcs">
+            <div class="error">Please select an option.</div>
+          </div>
+
+          <div class="field" id="f-dept">
+            <label for="dept">Department / field of study (optional)</label>
+            <input type="text" id="dept" placeholder="e.g. Computer Science">
+          </div>
+
+          <div class="field" id="f-why">
+            <label for="why">Why do you want to learn email marketing?</label>
+            <textarea id="why" rows="3" placeholder="Tell us a bit about why this matters to you..."></textarea>
+            <div class="error">Please give a real answer (at least 20 characters).</div>
+          </div>
+
+          <div class="field checkbox-field" id="f-commit">
+            <label class="checkbox-label">
+              <input type="checkbox" id="commit">
+              <span>I commit to attending live for all 3 days (24–26 Aug 2026)</span>
+            </label>
+            <div class="error">You need to confirm this to join — sessions are live.</div>
+          </div>
+
+          <button type="submit" id="submitBtn">
+            Reserve my seat
+            <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
+          </button>
+          
+          <p class="fine-print">100% Free · We ask everyone to commit before joining so the cohort stays focused.</p>
+        </form>
+
+        <!-- Success Panel -->
+        <div class="success" id="successPanel">
+          <div class="check-icon-wrap">
+            <svg width="38" height="38" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>
+          </div>
+          <h2>Registration Complete!</h2>
+          <p>Your seat has been successfully reserved. Tap the button below right now to join the official training WhatsApp group where live session links and materials are shared.</p>
+          
+          <a href="https://chat.whatsapp.com/KtTHtgY94PfI6XXR7NKKNt?s=em&p=a&ilr=0" target="_blank" rel="noopener" class="wa-btn" id="waGroupLink">
+            <svg width="24" height="24" fill="currentColor" viewBox="0 0 24 24"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.705 1.754zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-.868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.347.223-.644.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.372-.025-.521-.075-.148-.669-1.611-.916-2.206-.242-.579-.487-.501-.669-.51l-.57-.01c-.198 0-.52.074-.792.372s-1.04 1.016-1.04 2.479 1.065 2.876 1.213 3.074c.149.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.695.248-1.29.173-1.414z"/></svg>
+            Join WhatsApp Group →
+          </a>
+          <p class="wa-note">Click the button above to join immediately.</p>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Footer -->
+  <footer class="footer-brand">
+    Organized by <span class="nation">Eazi</span><b>Nation</b> Digital Trainer & NFCS UNN
+  </footer>
+
+</div>
+
+<!-- Admin Dashboard View -->
+<div id="adminView">
+  <div class="admin-card">
+    <div class="admin-header">
+      <div>
+        <h1>Registrations Dashboard</h1>
+        <div class="admin-count" id="adminCount">Loading registrations...</div>
+      </div>
+      <div class="admin-toolbar">
+        <button class="admin-btn" id="exportBtn">
+          <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+          Export CSV
+        </button>
+        <button class="admin-btn secondary" id="refreshBtn">
+          <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+          Refresh
+        </button>
+      </div>
+    </div>
+
+    <!-- Admin KPI Stats -->
+    <div class="admin-stats-grid">
+      <div class="admin-stat-card">
+        <div class="admin-stat-val" id="statTotal">0</div>
+        <div class="admin-stat-label">Total Leads</div>
+      </div>
+      <div class="admin-stat-card">
+        <div class="admin-stat-val" id="statUnn">0</div>
+        <div class="admin-stat-label">UNN Students</div>
+      </div>
+      <div class="admin-stat-card">
+        <div class="admin-stat-val" id="statNfcs">0</div>
+        <div class="admin-stat-label">NFCSer Members</div>
+      </div>
+      <div class="admin-stat-card">
+        <div class="admin-stat-val" id="statCommitted">0%</div>
+        <div class="admin-stat-label">Commitment Rate</div>
+      </div>
+    </div>
+
+    <!-- Search & Filter Bar -->
+    <div class="admin-controls">
+      <div class="search-box">
+        <svg class="search-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+        <input type="text" id="adminSearch" placeholder="Search by name, email, phone, status, or dept...">
+      </div>
+    </div>
+
+    <!-- Table -->
+    <div class="table-wrap">
+      <table id="leadsTable">
+        <thead>
+          <tr>
+            <th>Name</th><th>Email</th><th>Phone (WhatsApp)</th><th>Status</th><th>NFCSer</th><th>Department</th><th>Why Join</th><th>Committed</th><th>Submitted</th>
+          </tr>
+        </thead>
+        <tbody id="leadsBody"></tbody>
+      </table>
+    </div>
+    <div class="empty-state" id="emptyState" style="display:none;">No registrations found.</div>
+  </div>
+</div>
+
+<script>
+const ADMIN_CODE = "eazi_nation_2026"; // Access via ?admin=eazi_nation_2026
+const TOTAL_SLOTS = 50;
+const WHATSAPP_GROUP_LINK = "https://chat.whatsapp.com/KtTHtgY94PfI6XXR7NKKNt?s=em&p=a&ilr=0";
+
+// Ensure success link uses the group link
+document.getElementById('waGroupLink').href = WHATSAPP_GROUP_LINK;
+</script>
+<script>
+async function updateSlotCounter(){
+  try{
+    const r = await fetch('/api/slot-count');
+    const data = await r.json();
+    const count = data.count || 0;
+    const remaining = Math.max(TOTAL_SLOTS - count, 0);
+    const pct = Math.min((count / TOTAL_SLOTS) * 100, 100);
+    const slotText = document.getElementById('slotText');
+    const slotBar = document.getElementById('slotBar');
+    if(remaining > 0){
+      slotText.textContent = `🔥 Only ${remaining} of ${TOTAL_SLOTS} slots left`;
+    } else {
+      slotText.textContent = `🎉 All ${TOTAL_SLOTS} slots filled — spread the word!`;
+    }
+    slotBar.style.width = pct + '%';
+  } catch(err){
+    document.getElementById('slotText').textContent = `${TOTAL_SLOTS} slots available`;
+  }
+}
+updateSlotCounter();
+
+const form = document.getElementById('leadForm');
+const submitBtn = document.getElementById('submitBtn');
+
+function validateField(id, testFn){
+  const wrapper = document.getElementById('f-' + id);
+  const el = document.getElementById(id);
+  const ok = testFn(el.value.trim());
+  wrapper.classList.toggle('invalid', !ok);
+  return ok;
+}
+
+function isValidEmail(v){
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
+}
+function isValidPhone(v){
+  return /^[0-9+\-\s()]{7,15}$/.test(v);
+}
+
+function validateCommit(){
+  const wrapper = document.getElementById('f-commit');
+  const el = document.getElementById('commit');
+  const ok = el.checked;
+  wrapper.classList.toggle('invalid', !ok);
+  return ok;
+}
+
+// ---- Custom dropdowns ----
+document.querySelectorAll('.dropdown').forEach(dropdown => {
+  const field = dropdown.dataset.field;
+  const toggle = dropdown.querySelector('.dropdown-toggle');
+  const menu = dropdown.querySelector('.dropdown-menu');
+  const hidden = document.getElementById(field);
+  const wrapper = document.getElementById('f-' + field);
+
+  toggle.addEventListener('click', (e) => {
+    e.stopPropagation();
+    document.querySelectorAll('.dropdown.open').forEach(d => { if(d !== dropdown) d.classList.remove('open'); });
+    dropdown.classList.toggle('open');
+  });
+
+  menu.querySelectorAll('.dropdown-option').forEach(opt => {
+    opt.addEventListener('click', () => {
+      hidden.value = opt.dataset.value;
+      toggle.textContent = opt.textContent;
+      toggle.classList.add('has-value');
+      menu.querySelectorAll('.dropdown-option').forEach(o => o.classList.remove('active'));
+      opt.classList.add('active');
+      dropdown.classList.remove('open');
+      wrapper.classList.remove('invalid');
+    });
+  });
+});
+
+document.addEventListener('click', () => {
+  document.querySelectorAll('.dropdown.open').forEach(d => d.classList.remove('open'));
+});
+
+form.addEventListener('submit', async (e) => {
+  e.preventDefault();
+
+  const okName = validateField('name', v => v.length > 1);
+  const okEmail = validateField('email', v => isValidEmail(v));
+  const okPhone = validateField('phone', v => isValidPhone(v));
+  const okStatus = validateField('status', v => v.length > 0);
+  const okNfcs = validateField('nfcs', v => v.length > 0);
+  const okWhy = validateField('why', v => v.length >= 20);
+  const okCommit = validateCommit();
+
+  if(!(okName && okEmail && okPhone && okStatus && okNfcs && okWhy && okCommit)) return;
+
+  submitBtn.disabled = true;
+  submitBtn.textContent = 'Saving...';
+
+  const lead = {
+    name: document.getElementById('name').value.trim(),
+    email: document.getElementById('email').value.trim(),
+    phone: document.getElementById('phone').value.trim(),
+    status: document.getElementById('status').value,
+    nfcs: document.getElementById('nfcs').value,
+    dept: document.getElementById('dept').value.trim(),
+    why: document.getElementById('why').value.trim(),
+    committed: document.getElementById('commit').checked,
+    submittedAt: new Date().toISOString()
+  };
+
+  try {
+    const res = await fetch('/api/register', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(lead)
+    });
+    if(!res.ok){
+      throw new Error('Registration request failed');
+    }
+    form.style.display = 'none';
+    document.getElementById('successPanel').style.display = 'block';
+    updateSlotCounter();
+  } catch(err){
+    submitBtn.disabled = false;
+    submitBtn.innerHTML = `Reserve my seat <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>`;
+    alert('Something went wrong saving your response. Please try again.');
+    console.error(err);
+  }
+});
+
+// ---- Admin view ----
+let allLeads = [];
+
+function csvEscape(v){
+  const s = (v ?? '').toString().replace(/"/g,'""');
+  return `"${s}"`;
+}
+
+function cleanPhoneForWa(p){
+  if(!p) return '';
+  let clean = p.replace(/[^0-9]/g, '');
+  if(clean.startsWith('0')) clean = '234' + clean.slice(1);
+  return clean;
+}
+
+async function loadLeads(){
+  const r = await fetch('/api/leads?code=' + encodeURIComponent(ADMIN_CODE));
+  if(!r.ok) return [];
+  const data = await r.json();
+  return data.leads || [];
+}
+
+function updateStats(leads){
+  const total = leads.length;
+  const unnCount = leads.filter(l => (l.status || '').toLowerCase().includes('unn')).length;
+  const nfcsCount = leads.filter(l => (l.nfcs || '').toLowerCase().startsWith('yes')).length;
+  const committedCount = leads.filter(l => l.committed).length;
+  const commitRate = total > 0 ? Math.round((committedCount / total) * 100) : 0;
+
+  document.getElementById('statTotal').textContent = total;
+  document.getElementById('statUnn').textContent = unnCount;
+  document.getElementById('statNfcs').textContent = nfcsCount;
+  document.getElementById('statCommitted').textContent = commitRate + '%';
+}
+
+function renderLeads(leads){
+  const body = document.getElementById('leadsBody');
+  const empty = document.getElementById('emptyState');
+  const table = document.getElementById('leadsTable');
+  document.getElementById('adminCount').textContent = leads.length + ' registration' + (leads.length === 1 ? '' : 's');
+
+  if(leads.length === 0){
+    table.style.display = 'none';
+    empty.style.display = 'block';
+    return;
+  }
+  table.style.display = 'table';
+  empty.style.display = 'none';
+
+  body.innerHTML = leads.map(l => {
+    const waPhone = cleanPhoneForWa(l.phone);
+    const isUnn = (l.status || '').toLowerCase().includes('unn');
+    const isNfcs = (l.nfcs || '').toLowerCase().startsWith('yes');
+    return `
+      <tr>
+        <td><strong>${l.name || ''}</strong></td>
+        <td><a href="mailto:${l.email || ''}" style="color:var(--text-muted);">${l.email || ''}</a></td>
+        <td>
+          ${waPhone ? `<a href="https://wa.me/${waPhone}" target="_blank" class="wa-link">
+            💬 ${l.phone}
+          </a>` : (l.phone || '')}
+        </td>
+        <td><span class="badge ${isUnn ? 'badge-unn' : 'badge-other'}">${l.status || 'N/A'}</span></td>
+        <td><span class="badge ${isNfcs ? 'badge-unn' : 'badge-other'}">${l.nfcs || 'N/A'}</span></td>
+        <td>${l.dept || '—'}</td>
+        <td class="why-cell" title="${(l.why || '').replace(/"/g, '&quot;')}" onclick="alert(this.title)">${l.why || ''}</td>
+        <td><span class="badge ${l.committed ? 'badge-yes' : 'badge-no'}">${l.committed ? '✓ Yes' : '✕ No'}</span></td>
+        <td>${l.submittedAt ? new Date(l.submittedAt).toLocaleString() : ''}</td>
+      </tr>
+    `;
+  }).join('');
+}
+
+function exportCSV(leads){
+  const headers = ['Name','Email','Phone','Status','NFCSer','Department','Why','Committed','Submitted At'];
+  const rows = leads.map(l => [l.name, l.email, l.phone, l.status, l.nfcs, l.dept, l.why, l.committed ? 'Yes':'No', l.submittedAt]);
+  const csv = [headers.map(csvEscape).join(','), ...rows.map(r => r.map(csvEscape).join(','))].join('\n');
+  const blob = new Blob([csv], {type: 'text/csv'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'email-marketing-training-leads.csv';
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+function filterLeads(){
+  const query = document.getElementById('adminSearch').value.toLowerCase().trim();
+  if(!query){
+    renderLeads(allLeads);
+    return;
+  }
+  const filtered = allLeads.filter(l => 
+    (l.name || '').toLowerCase().includes(query) ||
+    (l.email || '').toLowerCase().includes(query) ||
+    (l.phone || '').toLowerCase().includes(query) ||
+    (l.status || '').toLowerCase().includes(query) ||
+    (l.dept || '').toLowerCase().includes(query) ||
+    (l.why || '').toLowerCase().includes(query)
+  );
+  renderLeads(filtered);
+}
+
+async function initAdmin(){
+  document.body.querySelector('.wrap').style.display = 'none';
+  document.getElementById('adminView').style.display = 'block';
+  allLeads = await loadLeads();
+  updateStats(allLeads);
+  renderLeads(allLeads);
+
+  document.getElementById('adminSearch').addEventListener('input', filterLeads);
+  document.getElementById('exportBtn').addEventListener('click', () => exportCSV(allLeads));
+  document.getElementById('refreshBtn').addEventListener('click', async () => {
+    allLeads = await loadLeads();
+    updateStats(allLeads);
+    renderLeads(allLeads);
+  });
+}
+
+const params = new URLSearchParams(window.location.search);
+if(params.get('admin') === ADMIN_CODE){
+  initAdmin();
+}
+
+// ---- Live Countdown Timer ----
+const TARGET_DATE = new Date("2026-08-24T09:00:00+01:00").getTime();
+
+function updateCountdown() {
+  const now = new Date().getTime();
+  const diff = TARGET_DATE - now;
+
+  if (diff <= 0) {
+    document.getElementById('cdDays').textContent = "00";
+    document.getElementById('cdHours').textContent = "00";
+    document.getElementById('cdMins').textContent = "00";
+    document.getElementById('cdSecs').textContent = "00";
+    return;
+  }
+
+  const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+  const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+  const mins = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+  const secs = Math.floor((diff % (1000 * 60)) / 1000);
+
+  document.getElementById('cdDays').textContent = String(days).padStart(2, '0');
+  document.getElementById('cdHours').textContent = String(hours).padStart(2, '0');
+  document.getElementById('cdMins').textContent = String(mins).padStart(2, '0');
+  document.getElementById('cdSecs').textContent = String(secs).padStart(2, '0');
+}
+
+updateCountdown();
+setInterval(updateCountdown, 1000);
+</script>
+</body>
+</html>
