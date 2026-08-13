@@ -386,6 +386,33 @@
     color: var(--text-muted);
   }
 
+  /* Toast Notification */
+  .toast-notice {
+    position: fixed;
+    top: 24px;
+    right: 24px;
+    background: #10b981;
+    color: white;
+    padding: 14px 22px;
+    border-radius: 14px;
+    font-size: 14px;
+    font-weight: 600;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    transform: translateY(-30px);
+    opacity: 0;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    pointer-events: none;
+    border: 1px solid rgba(255,255,255,0.2);
+  }
+  .toast-notice.show {
+    transform: translateY(0);
+    opacity: 1;
+  }
+
   /* Mobile Responsiveness Improvements */
   @media (max-width: 640px) {
     body { padding: 16px 12px 60px; }
@@ -402,6 +429,7 @@
     .login-card { padding: 28px 20px; border-radius: 20px; }
     .login-field input { font-size: 16px; min-height: 48px; }
     .login-btn { min-height: 48px; font-size: 15px; }
+    .toast-notice { top: 12px; right: 12px; left: 12px; justify-content: center; }
   }
 </style>
 </head>
@@ -409,6 +437,12 @@
 
 <div class="bg-glow-1"></div>
 <div class="bg-glow-2"></div>
+
+<!-- Toast Notification -->
+<div id="toastNotice" class="toast-notice">
+  <span style="font-size: 18px;">💬</span>
+  <span id="toastText">Message copied!</span>
+</div>
 
 <!-- Passcode Login Overlay -->
 <div class="login-overlay" id="loginOverlay">
@@ -607,7 +641,42 @@ function updateStats(leads){
   document.getElementById('statRemaining').textContent = remainingSlots;
 }
 
-function openWaWithMessage(phone, name, event) {
+function copyTextToClipboard(text) {
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(text).catch(() => fallbackCopyTextToClipboard(text));
+  } else {
+    fallbackCopyTextToClipboard(text);
+  }
+}
+
+function fallbackCopyTextToClipboard(text) {
+  const textArea = document.createElement("textarea");
+  textArea.value = text;
+  textArea.style.top = "0";
+  textArea.style.left = "0";
+  textArea.style.position = "fixed";
+  document.body.appendChild(textArea);
+  textArea.focus();
+  textArea.select();
+  try {
+    document.execCommand('copy');
+  } catch (err) {}
+  document.body.removeChild(textArea);
+}
+
+function showToast(msg) {
+  const toast = document.getElementById('toastNotice');
+  const toastText = document.getElementById('toastText');
+  if (toast && toastText) {
+    toastText.textContent = msg;
+    toast.classList.add('show');
+    setTimeout(() => {
+      toast.classList.remove('show');
+    }, 3500);
+  }
+}
+
+function copyAndOpenWa(phone, name, event) {
   if (event) event.preventDefault();
   const waPhone = cleanPhoneForWa(phone);
   if (!waPhone) {
@@ -617,16 +686,35 @@ function openWaWithMessage(phone, name, event) {
 
   const currentGroupLink = getWaGroupLink();
   const firstName = (name || 'there').trim().split(' ')[0];
-  const waMsg = `Hi ${firstName}! 👋 Thank you for registering for the 3-Day Email Marketing Training (NFCS UNN & EaziNation).\n\nHere is the updated official WhatsApp group link:\n${currentGroupLink}\n\nPlease tap the link to join the group now! 🚀`;
+  
+  // 1. Multiline formatted message for Clipboard paste fallback
+  const fullMsg = `Hi ${firstName}! 👋\n\nThank you for registering for the 3-Day Email Marketing Training (NFCS UNN & EaziNation).\n\nHere is the updated official WhatsApp group link:\n${currentGroupLink}\n\nPlease tap the link above to join the group now! 🚀`;
 
-  // Copy message text to clipboard as fallback in case browser/WhatsApp Web clears text field
-  if (navigator.clipboard && navigator.clipboard.writeText) {
-    navigator.clipboard.writeText(waMsg).catch(() => {});
+  // 2. Clean single-line message for WhatsApp URL query param
+  const urlMsg = `Hi ${firstName}! Thank you for registering for the 3-Day Email Marketing Training. Here is the updated official WhatsApp group link: ${currentGroupLink} - Tap to join!`;
+
+  // Copy full formatted message to clipboard
+  copyTextToClipboard(fullMsg);
+  showToast(`Copied message for ${firstName}! Opening WhatsApp...`);
+
+  // Detect Mobile vs Desktop for direct endpoint routing
+  const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+  let targetUrl = `https://web.whatsapp.com/send?phone=${waPhone}&text=${encodeURIComponent(urlMsg)}`;
+  if (isMobile) {
+    targetUrl = `https://api.whatsapp.com/send?phone=${waPhone}&text=${encodeURIComponent(urlMsg)}`;
   }
 
-  const waUrl = `https://api.whatsapp.com/send?phone=${waPhone}&text=${encodeURIComponent(waMsg)}`;
-  window.open(waUrl, '_blank', 'noopener,noreferrer');
+  window.open(targetUrl, '_blank', 'noopener,noreferrer');
   return false;
+}
+
+function copyOnlyMsg(phone, name, event) {
+  if (event) event.preventDefault();
+  const firstName = (name || 'there').trim().split(' ')[0];
+  const currentGroupLink = getWaGroupLink();
+  const fullMsg = `Hi ${firstName}! 👋\n\nThank you for registering for the 3-Day Email Marketing Training (NFCS UNN & EaziNation).\n\nHere is the updated official WhatsApp group link:\n${currentGroupLink}\n\nPlease tap the link above to join the group now! 🚀`;
+  copyTextToClipboard(fullMsg);
+  showToast(`Copied invitation message for ${firstName}!`);
 }
 
 function renderLeads(leads){
@@ -653,19 +741,24 @@ function renderLeads(leads){
     const nameSafe = (l.name || 'User').replace(/'/g, "\\'");
     const phoneSafe = (l.phone || '').replace(/'/g, "\\'");
     
-    // Construct pre-filled WhatsApp message URL
+    // Construct single line & multiline messages
     const firstName = (l.name || 'there').trim().split(' ')[0];
-    const waMsg = `Hi ${firstName}! 👋 Thank you for registering for the 3-Day Email Marketing Training (NFCS UNN & EaziNation).\n\nHere is the updated official WhatsApp group link:\n${currentGroupLink}\n\nPlease tap the link to join the group now! 🚀`;
-    const waUrl = `https://api.whatsapp.com/send?phone=${waPhone}&text=${encodeURIComponent(waMsg)}`;
+    const urlMsg = `Hi ${firstName}! Thank you for registering for the 3-Day Email Marketing Training. Here is the updated official WhatsApp group link: ${currentGroupLink} - Tap to join!`;
+    const waUrl = `https://web.whatsapp.com/send?phone=${waPhone}&text=${encodeURIComponent(urlMsg)}`;
 
     return `
       <tr>
         <td><strong>${l.name || ''}</strong></td>
         <td><a href="mailto:${l.email || ''}" style="color:var(--text-muted);">${l.email || ''}</a></td>
-        <td>
-          ${waPhone ? `<a href="${waUrl}" onclick="openWaWithMessage('${phoneSafe}', '${nameSafe}', event)" target="_blank" class="wa-link" title="Click to open WhatsApp & copy pre-filled invitation to ${l.name || 'participant'}">
-            💬 ${l.phone}
-          </a>` : (l.phone || '')}
+        <td style="white-space:nowrap;">
+          ${waPhone ? `
+            <a href="${waUrl}" onclick="copyAndOpenWa('${phoneSafe}', '${nameSafe}', event)" target="_blank" class="wa-link" style="color:#25d366; font-weight:700; background:rgba(37,211,102,0.12); padding:6px 10px; border-radius:8px; border:1px solid rgba(37,211,102,0.3); text-decoration:none; display:inline-flex; align-items:center; gap:4px;" title="Click to open WhatsApp & auto-copy message for ${l.name || 'participant'}">
+              💬 ${l.phone}
+            </a>
+            <button type="button" onclick="copyOnlyMsg('${phoneSafe}', '${nameSafe}', event)" style="background:rgba(255,255,255,0.06); border:1px solid var(--border-subtle); color:var(--text-muted); padding:5px 8px; border-radius:6px; font-size:11px; margin-left:4px; cursor:pointer; font-weight:600;" title="Copy Message Text Only">
+              📋 Copy Msg
+            </button>
+          ` : (l.phone || '')}
         </td>
         <td><span class="badge ${isUnn ? 'badge-unn' : 'badge-other'}">${l.status || 'N/A'}</span></td>
         <td><span class="badge ${isNfcs ? 'badge-unn' : 'badge-other'}">${l.nfcs || 'N/A'}</span></td>
