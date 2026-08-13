@@ -475,6 +475,17 @@
       </div>
     </div>
 
+    <!-- Search & Filter Bar & WhatsApp Group Link Config -->
+    <div style="margin-bottom: 20px; background: rgba(37, 211, 102, 0.08); border: 1px solid rgba(37, 211, 102, 0.25); border-radius: 14px; padding: 14px 18px; display: flex; align-items: center; gap: 14px; flex-wrap: wrap;">
+      <div style="font-size: 13.5px; font-weight: 700; color: #25d366; display: flex; align-items: center; gap: 6px; white-space: nowrap;">
+        💬 Group Link for Direct Messages:
+      </div>
+      <input type="url" id="waGroupLinkInput" style="flex: 1; min-width: 260px; background: var(--bg-input); border: 1px solid var(--border-color); color: white; padding: 10px 14px; border-radius: 10px; font-size: 13.5px; outline: none;" value="https://chat.whatsapp.com/FcCT3vtLEcqHRtMAYYQhfz" placeholder="Paste updated WhatsApp group link here..." oninput="onWaLinkChange(this.value)">
+      <span style="font-size: 12px; color: var(--text-muted); line-height: 1.3;">
+        ⚡ Clicking any registrant's number below will instantly open WhatsApp pre-filled with this group link & their name!
+      </span>
+    </div>
+
     <!-- Search & Filter Bar -->
     <div class="search-box">
       <svg class="search-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
@@ -486,7 +497,7 @@
       <table id="leadsTable">
         <thead>
           <tr>
-            <th>Name</th><th>Email</th><th>Phone (WhatsApp)</th><th>Status</th><th>NFCSer</th><th>Department</th><th>Why Join</th><th>Submitted</th><th>Action</th>
+            <th>Name</th><th>Email</th><th>Phone (Click to Send Group Link)</th><th>Status</th><th>NFCSer</th><th>Department</th><th>Why Join</th><th>Submitted</th><th>Action</th>
           </tr>
         </thead>
         <tbody id="leadsBody"></tbody>
@@ -513,6 +524,28 @@ async function sha256(message) {
 function csvEscape(v){
   const s = (v ?? '').toString().replace(/"/g,'""');
   return `"${s}"`;
+}
+
+function getWaGroupLink() {
+  const input = document.getElementById('waGroupLinkInput');
+  if (input && input.value.trim()) {
+    localStorage.setItem('admin_wa_group_link', input.value.trim());
+    return input.value.trim();
+  }
+  return localStorage.getItem('admin_wa_group_link') || "https://chat.whatsapp.com/FcCT3vtLEcqHRtMAYYQhfz";
+}
+
+function onWaLinkChange(val) {
+  if (val && val.trim()) {
+    localStorage.setItem('admin_wa_group_link', val.trim());
+  }
+  if (allLeads && allLeads.length > 0) {
+    if (document.getElementById('adminSearch').value.trim()) {
+      filterLeads();
+    } else {
+      renderLeads(allLeads);
+    }
+  }
 }
 
 function cleanPhoneForWa(p){
@@ -588,18 +621,26 @@ function renderLeads(leads){
   table.style.display = 'table';
   empty.style.display = 'none';
 
+  const currentGroupLink = getWaGroupLink();
+
   body.innerHTML = leads.map(l => {
     const waPhone = cleanPhoneForWa(l.phone);
     const isUnn = (l.status || '').toLowerCase().includes('unn');
     const isNfcs = (l.nfcs || '').toLowerCase().startsWith('yes');
     const deleteKey = (l.submittedAt || l.email || l.phone || '').replace(/'/g, "\\'");
     const nameSafe = (l.name || 'User').replace(/'/g, "\\'");
+    
+    // Construct pre-filled WhatsApp message
+    const firstName = (l.name || 'there').trim().split(' ')[0];
+    const waMsg = `Hi ${firstName}! 👋\n\nThank you for registering for the 3-Day Email Marketing Training (NFCS UNN & EaziNation).\n\nHere is the updated official WhatsApp group link:\n${currentGroupLink}\n\nPlease tap the link above to join the group now! 🚀`;
+    const waUrl = `https://wa.me/${waPhone}?text=${encodeURIComponent(waMsg)}`;
+
     return `
       <tr>
         <td><strong>${l.name || ''}</strong></td>
         <td><a href="mailto:${l.email || ''}" style="color:var(--text-muted);">${l.email || ''}</a></td>
         <td>
-          ${waPhone ? `<a href="https://wa.me/${waPhone}" target="_blank" class="wa-link">
+          ${waPhone ? `<a href="${waUrl}" target="_blank" class="wa-link" title="Click to send WhatsApp group link message to ${l.name || 'participant'}">
             💬 ${l.phone}
           </a>` : (l.phone || '')}
         </td>
@@ -689,6 +730,11 @@ async function unlockAdmin(passcode){
   sessionStorage.setItem('admin_passcode', passcode);
   document.getElementById('loginOverlay').style.display = 'none';
   document.getElementById('adminContainer').style.display = 'block';
+
+  const savedLink = localStorage.getItem('admin_wa_group_link');
+  if (savedLink && document.getElementById('waGroupLinkInput')) {
+    document.getElementById('waGroupLinkInput').value = savedLink;
+  }
 
   allLeads = await loadLeads(passcode);
   updateStats(allLeads);
