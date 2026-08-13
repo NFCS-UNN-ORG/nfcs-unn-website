@@ -607,6 +607,28 @@ function updateStats(leads){
   document.getElementById('statRemaining').textContent = remainingSlots;
 }
 
+function openWaWithMessage(phone, name, event) {
+  if (event) event.preventDefault();
+  const waPhone = cleanPhoneForWa(phone);
+  if (!waPhone) {
+    alert("Invalid phone number.");
+    return false;
+  }
+
+  const currentGroupLink = getWaGroupLink();
+  const firstName = (name || 'there').trim().split(' ')[0];
+  const waMsg = `Hi ${firstName}! 👋 Thank you for registering for the 3-Day Email Marketing Training (NFCS UNN & EaziNation).\n\nHere is the updated official WhatsApp group link:\n${currentGroupLink}\n\nPlease tap the link to join the group now! 🚀`;
+
+  // Copy message text to clipboard as fallback in case browser/WhatsApp Web clears text field
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(waMsg).catch(() => {});
+  }
+
+  const waUrl = `https://api.whatsapp.com/send?phone=${waPhone}&text=${encodeURIComponent(waMsg)}`;
+  window.open(waUrl, '_blank', 'noopener,noreferrer');
+  return false;
+}
+
 function renderLeads(leads){
   const body = document.getElementById('leadsBody');
   const empty = document.getElementById('emptyState');
@@ -629,18 +651,19 @@ function renderLeads(leads){
     const isNfcs = (l.nfcs || '').toLowerCase().startsWith('yes');
     const deleteKey = (l.submittedAt || l.email || l.phone || '').replace(/'/g, "\\'");
     const nameSafe = (l.name || 'User').replace(/'/g, "\\'");
+    const phoneSafe = (l.phone || '').replace(/'/g, "\\'");
     
-    // Construct pre-filled WhatsApp message
+    // Construct pre-filled WhatsApp message URL
     const firstName = (l.name || 'there').trim().split(' ')[0];
-    const waMsg = `Hi ${firstName}! 👋\n\nThank you for registering for the 3-Day Email Marketing Training (NFCS UNN & EaziNation).\n\nHere is the updated official WhatsApp group link:\n${currentGroupLink}\n\nPlease tap the link above to join the group now! 🚀`;
-    const waUrl = `https://wa.me/${waPhone}?text=${encodeURIComponent(waMsg)}`;
+    const waMsg = `Hi ${firstName}! 👋 Thank you for registering for the 3-Day Email Marketing Training (NFCS UNN & EaziNation).\n\nHere is the updated official WhatsApp group link:\n${currentGroupLink}\n\nPlease tap the link to join the group now! 🚀`;
+    const waUrl = `https://api.whatsapp.com/send?phone=${waPhone}&text=${encodeURIComponent(waMsg)}`;
 
     return `
       <tr>
         <td><strong>${l.name || ''}</strong></td>
         <td><a href="mailto:${l.email || ''}" style="color:var(--text-muted);">${l.email || ''}</a></td>
         <td>
-          ${waPhone ? `<a href="${waUrl}" target="_blank" class="wa-link" title="Click to send WhatsApp group link message to ${l.name || 'participant'}">
+          ${waPhone ? `<a href="${waUrl}" onclick="openWaWithMessage('${phoneSafe}', '${nameSafe}', event)" target="_blank" class="wa-link" title="Click to open WhatsApp & copy pre-filled invitation to ${l.name || 'participant'}">
             💬 ${l.phone}
           </a>` : (l.phone || '')}
         </td>
