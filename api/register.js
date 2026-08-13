@@ -53,7 +53,7 @@ export default async function handler(req, res) {
               <p style="margin-bottom: 20px; font-size: 15px; color: #334155;">Tap the button below right now to join the official WhatsApp Group for live session links & class materials:</p>
               
               <div style="text-align: center; margin: 28px 0;">
-                <a href="https://chat.whatsapp.com/FcCT3vtLEcqHRtMAYYQhfz" target="_blank" style="display: inline-block; background: #25d366; color: #ffffff; font-weight: bold; text-decoration: none; padding: 14px 28px; border-radius: 12px; font-size: 15px; box-shadow: 0 4px 10px rgba(37,211,102,0.3);">Join Official WhatsApp Group →</a>
+                <a href="https://chat.whatsapp.com/FcCT3vtLEcqHRtMAYYQhfz?s=cl&p=a&ilr=0" target="_blank" style="display: inline-block; background: #25d366; color: #ffffff; font-weight: bold; text-decoration: none; padding: 14px 28px; border-radius: 12px; font-size: 15px; box-shadow: 0 4px 10px rgba(37,211,102,0.3);">Join Official WhatsApp Group →</a>
               </div>
 
               <hr style="border: none; border-top: 1px solid #e2e8f0; margin: 30px 0;" />

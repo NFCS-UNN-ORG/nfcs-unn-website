@@ -514,7 +514,7 @@
       <div style="font-size: 13.5px; font-weight: 700; color: #25d366; display: flex; align-items: center; gap: 6px; white-space: nowrap;">
         💬 Group Link for Direct Messages:
       </div>
-      <input type="url" id="waGroupLinkInput" style="flex: 1; min-width: 260px; background: var(--bg-input); border: 1px solid var(--border-color); color: white; padding: 10px 14px; border-radius: 10px; font-size: 13.5px; outline: none;" value="https://chat.whatsapp.com/FcCT3vtLEcqHRtMAYYQhfz" placeholder="Paste updated WhatsApp group link here..." oninput="onWaLinkChange(this.value)">
+      <input type="url" id="waGroupLinkInput" style="flex: 1; min-width: 260px; background: var(--bg-input); border: 1px solid var(--border-color); color: white; padding: 10px 14px; border-radius: 10px; font-size: 13.5px; outline: none;" value="https://chat.whatsapp.com/FcCT3vtLEcqHRtMAYYQhfz?s=cl&p=a&ilr=0" placeholder="Paste updated WhatsApp group link here..." oninput="onWaLinkChange(this.value)">
       <span style="font-size: 12px; color: var(--text-muted); line-height: 1.3;">
         ⚡ Clicking any registrant's number below will instantly open WhatsApp pre-filled with this group link & their name!
       </span>
@@ -566,7 +566,7 @@ function getWaGroupLink() {
     localStorage.setItem('admin_wa_group_link', input.value.trim());
     return input.value.trim();
   }
-  return localStorage.getItem('admin_wa_group_link') || "https://chat.whatsapp.com/FcCT3vtLEcqHRtMAYYQhfz";
+  return localStorage.getItem('admin_wa_group_link') || "https://chat.whatsapp.com/FcCT3vtLEcqHRtMAYYQhfz?s=cl&p=a&ilr=0";
 }
 
 function onWaLinkChange(val) {
