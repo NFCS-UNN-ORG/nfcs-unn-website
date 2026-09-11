@@ -27,7 +27,7 @@ const PRESET_TIERS = [
 
 export const TicketCard: React.FC<TicketCardProps> = React.memo(({
   name = 'Standard Raffle Ticket',
-  subtitle = '1st, 2nd, 3rd + Consolation (4th–10th) Grand Draw',
+  subtitle = '1st, 2nd, and 3rd Grand Draw Prizes',
   unitPrice = 200,
   quantity = 1,
   bonusTickets = 0,

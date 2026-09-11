@@ -21,7 +21,7 @@ const SLIDES = [
   {
     id: 'raffle',
     title: 'Grand Finale Raffle Draw',
-    subtitle: 'Win ₦250k, TV, Gas Cooker & Prizes',
+    subtitle: 'Win Powerbank + Earbuds, Gas + Rice & Pressing Iron',
     image: '/assets/raffle-flyer.jpg',
     alt: 'NFCS UNN Federation Week 2026 Official Raffle Draw Flyer',
     badge: '₦200 / Ticket · Win Big',
@@ -277,7 +277,7 @@ export const FederationWeekAnnouncementModal: React.FC<FederationWeekAnnouncemen
                         </span>
                       </div>
                       <p className="text-[11px] sm:text-xs text-stone-600 mt-0.5 leading-snug">
-                        Win major prizes (1st, 2nd, 3rd) and consolation rewards. Every <strong>10 tickets</strong> bought earns you <strong>+1 free bonus entry</strong>!
+                        Win 1st, 2nd, and 3rd grand prizes! Every <strong>10 tickets</strong> bought earns you <strong>+1 free bonus entry</strong>!
                       </p>
                     </div>
                   </div>

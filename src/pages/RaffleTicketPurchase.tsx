@@ -662,7 +662,7 @@ export default function RaffleTicketPurchase() {
                         {/* Ticket Card in Selectable Mode */}
                         <TicketCard
                           name="Standard Raffle Ticket"
-                          subtitle="Grand draw entry for 1st, 2nd, 3rd + Consolation prizes"
+                          subtitle="Grand draw entry for 1st, 2nd, and 3rd prizes"
                           unitPrice={UNIT_PRICE}
                           quantity={qtyNumber}
                           bonusTickets={bonusTickets}
@@ -714,7 +714,7 @@ export default function RaffleTicketPurchase() {
                           </div>
                           <TicketCard
                             name="Standard Raffle Ticket"
-                            subtitle="Grand draw entry for 1st, 2nd, 3rd + Consolation prizes"
+                            subtitle="Grand draw entry for 1st, 2nd, and 3rd prizes"
                             unitPrice={UNIT_PRICE}
                             quantity={qtyNumber}
                             bonusTickets={bonusTickets}
