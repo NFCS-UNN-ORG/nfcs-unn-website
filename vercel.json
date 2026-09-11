@@ -37,11 +37,15 @@
     },
     {
       "source": "/raffle-draw",
-      "destination": "/index.html"
+      "destination": "/"
     },
     {
       "source": "/raffle-draw/:path*",
-      "destination": "/index.html"
+      "destination": "/"
+    },
+    {
+      "source": "/((?!api/|_next/|_static/|[\\w-]+\\.\\w+).*)",
+      "destination": "/"
     }
   ]
 }
