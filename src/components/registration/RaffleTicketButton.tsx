@@ -16,7 +16,7 @@ const TICKET_PATH =
 
 export const RaffleTicketButton: React.FC<RaffleTicketButtonProps> = React.memo(({
   onClick,
-  className = 'mb-28 md:mb-0',
+  className = 'mb-28 md:mb-0 md:mt-16',
 }) => {
   return (
     <motion.button
