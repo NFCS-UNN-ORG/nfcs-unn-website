@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { PageTab } from '../types';
-import { Sparkles, Heart, Calendar, GraduationCap } from 'lucide-react';
+import { Sparkles, Heart, Calendar, GraduationCap, Ticket } from 'lucide-react';
 import { motion } from 'motion/react';
 
 interface TopNotificationBarProps {
@@ -10,13 +10,20 @@ interface TopNotificationBarProps {
 export const TopNotificationBar: React.FC<TopNotificationBarProps> = ({ onNavigate }) => {
   const [isHovered, setIsHovered] = useState(false);
 
-  const announcements = [
+  const announcements: Array<{
+    icon: React.ReactNode;
+    text: string;
+    highlight?: string;
+    linkTab?: PageTab;
+    linkUrl?: string;
+    linkText: string;
+  }> = [
     {
-      icon: <Sparkles className="w-3.5 h-3.5 text-amber-400 dark:text-amber-600 shrink-0" />,
-      text: "NFCS UNN HARVEST & BAZAAR 2026 IS COMING UP!",
-      highlight: "IMPORTANT",
-      linkTab: 'events' as PageTab,
-      linkText: "LEARN MORE →",
+      icon: <Ticket className="w-3.5 h-3.5 text-amber-400 dark:text-amber-500 shrink-0" />,
+      text: "FEDERATION WEEK 2026 IS LIVE · WIN CASH & PRIZES IN THE OFFICIAL RAFFLE DRAW!",
+      highlight: "TICKETS ₦200",
+      linkUrl: "/raffle-draw",
+      linkText: "GET TICKETS NOW →",
     },
     {
       icon: <Heart className="w-3.5 h-3.5 text-emerald-400 dark:text-emerald-600 shrink-0" />,
@@ -40,6 +47,19 @@ export const TopNotificationBar: React.FC<TopNotificationBarProps> = ({ onNaviga
       linkText: "JOIN NETWORK →",
     },
   ];
+
+  const handleLinkClick = (item: typeof announcements[0], e: React.MouseEvent) => {
+    if (item.linkUrl) {
+      if (item.linkUrl.startsWith('/')) {
+        e.preventDefault();
+        window.history.pushState({}, '', item.linkUrl);
+        window.dispatchEvent(new PopStateEvent('popstate'));
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+    } else if (item.linkTab) {
+      onNavigate(item.linkTab);
+    }
+  };
 
   return (
     <motion.div
@@ -69,15 +89,16 @@ export const TopNotificationBar: React.FC<TopNotificationBarProps> = ({ onNaviga
                     {item.highlight}
                   </span>
                 )}
-                {item.linkTab && (
-                  <button
-                    onClick={() => onNavigate(item.linkTab)}
+                {(item.linkUrl || item.linkTab) && (
+                  <a
+                    href={item.linkUrl || '#'}
+                    onClick={(e) => handleLinkClick(item, e)}
                     onMouseEnter={() => setIsHovered(true)}
                     onMouseLeave={() => setIsHovered(false)}
                     className="underline underline-offset-2 hover:text-white dark:hover:text-[#4D2EAB]/80 transition-colors font-bold ml-1 text-emerald-400 dark:text-[#4D2EAB] hover:scale-105 transform duration-150 cursor-pointer"
                   >
                     {item.linkText}
-                  </button>
+                  </a>
                 )}
                 <span className="text-slate-400 dark:text-stone-400 ml-6">•</span>
               </div>
@@ -98,15 +119,16 @@ export const TopNotificationBar: React.FC<TopNotificationBarProps> = ({ onNaviga
                     {item.highlight}
                   </span>
                 )}
-                {item.linkTab && (
-                  <button
-                    onClick={() => onNavigate(item.linkTab)}
+                {(item.linkUrl || item.linkTab) && (
+                  <a
+                    href={item.linkUrl || '#'}
+                    onClick={(e) => handleLinkClick(item, e)}
                     onMouseEnter={() => setIsHovered(true)}
                     onMouseLeave={() => setIsHovered(false)}
                     className="underline underline-offset-2 hover:text-white dark:hover:text-[#4D2EAB]/80 transition-colors font-bold ml-1 text-emerald-400 dark:text-[#4D2EAB] hover:scale-105 transform duration-150 cursor-pointer"
                   >
                     {item.linkText}
-                  </button>
+                  </a>
                 )}
                 <span className="text-slate-400 dark:text-stone-400 ml-6">•</span>
               </div>

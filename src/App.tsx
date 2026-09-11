@@ -21,9 +21,66 @@ import { FaqPageView } from './components/Pages/FaqPageView';
 import { GalleryPageView } from './components/Pages/GalleryPageView';
 import { ContactPageView } from './components/Pages/ContactPageView';
 import { EventsPageView } from './components/Pages/EventsPageView';
+import RaffleTicketPurchase from './pages/RaffleTicketPurchase';
+import RaffleAdmin from './pages/RaffleAdmin';
 
 export default function App() {
   const [activeTab, setActiveTab] = useState<PageTab>('home');
+  const [currentPath, setCurrentPath] = useState(
+    typeof window !== 'undefined' ? window.location.pathname.replace(/\/$/, '') || '/' : '/'
+  );
+
+  React.useEffect(() => {
+    const handleLocationChange = () => {
+      const path = window.location.pathname.replace(/\/$/, '') || '/';
+      const search = window.location.search;
+
+      // Redirect alternate admin routes to /raffle-draw/admin
+      if (path === '/raffle/admin' || path === '/ticket-purchase/admin') {
+        window.history.replaceState({}, '', `/raffle-draw/admin${search}`);
+        setCurrentPath('/raffle-draw/admin');
+        return;
+      }
+
+      // Redirect alternate raffle routes to /raffle-draw
+      if (
+        path === '/raffle' ||
+        path === '/ticket-purchase' ||
+        path.startsWith('/raffle/') ||
+        path.startsWith('/ticket-purchase/')
+      ) {
+        window.history.replaceState({}, '', `/raffle-draw${search}`);
+        setCurrentPath('/raffle-draw');
+        return;
+      }
+
+      setCurrentPath(path);
+    };
+
+    handleLocationChange();
+
+    window.addEventListener('popstate', handleLocationChange);
+    return () => window.removeEventListener('popstate', handleLocationChange);
+  }, []);
+
+  if (
+    currentPath === '/raffle-draw/admin' ||
+    currentPath === '/ticket-purchase/admin' ||
+    currentPath === '/raffle/admin'
+  ) {
+    return <RaffleAdmin />;
+  }
+
+  if (
+    currentPath === '/raffle-draw' ||
+    currentPath.startsWith('/raffle-draw/') ||
+    currentPath === '/ticket-purchase' ||
+    currentPath.startsWith('/ticket-purchase/') ||
+    currentPath === '/raffle' ||
+    currentPath.startsWith('/raffle/')
+  ) {
+    return <RaffleTicketPurchase />;
+  }
 
   const handleNavigate = (tab: PageTab) => {
     setActiveTab(tab);

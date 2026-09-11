@@ -1,5 +1,27 @@
 {
   "cleanUrls": true,
+  "redirects": [
+    {
+      "source": "/raffle",
+      "destination": "/raffle-draw",
+      "permanent": false
+    },
+    {
+      "source": "/raffle/:path*",
+      "destination": "/raffle-draw/:path*",
+      "permanent": false
+    },
+    {
+      "source": "/ticket-purchase",
+      "destination": "/raffle-draw",
+      "permanent": false
+    },
+    {
+      "source": "/ticket-purchase/:path*",
+      "destination": "/raffle-draw/:path*",
+      "permanent": false
+    }
+  ],
   "rewrites": [
     {
       "source": "/free-training",
@@ -12,6 +34,14 @@
     {
       "source": "/eazi-admin-portal",
       "destination": "/admin.html"
+    },
+    {
+      "source": "/raffle-draw",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/raffle-draw/:path*",
+      "destination": "/index.html"
     }
   ]
 }

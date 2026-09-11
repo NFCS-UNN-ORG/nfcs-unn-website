@@ -19,6 +19,14 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: 'Missing required registration fields' });
   }
 
+  // Determine if this registration is for the Waitlist
+  const CUTOFF_TIMESTAMP = new Date("2026-08-24T20:00:00+01:00").getTime();
+  const isAfterCutoff = Date.now() >= CUTOFF_TIMESTAMP;
+  const isWaitlist = Boolean(lead.isWaitlist || lead.type === 'waitlist' || isAfterCutoff);
+
+  lead.isWaitlist = isWaitlist;
+  lead.registrationType = isWaitlist ? 'waitlist' : 'cohort';
+
   // Persist lead to store
   const updatedLeads = await saveLead(lead);
 
@@ -28,6 +36,54 @@ export default async function handler(req, res) {
   // Automated Confirmation Email via Resend API
   if (process.env.RESEND_API_KEY) {
     try {
+      const emailSubject = isWaitlist
+        ? "🚀 You're on the Waitlist! NFCS UNN Upcoming Digital Skills Trainings"
+        : "🎉 Your Seat is Reserved! NFCS UNN Email Marketing Training";
+
+      const emailHtml = isWaitlist ? `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 32px 24px; background: #ffffff; color: #0f172a; border-radius: 16px; border: 1px solid #e2e8f0; box-shadow: 0 4px 12px rgba(0,0,0,0.05);">
+          <h2 style="color: #6d28d9; margin-top: 0; font-size: 22px; font-weight: bold;">🚀 You're on the Waitlist!</h2>
+          <p style="font-size: 15px; line-height: 1.5; color: #334155;">Hi <strong>${lead.name}</strong>,</p>
+          <p style="font-size: 15px; line-height: 1.5; color: #334155;">Thank you for registering! Registration for the <strong>August 24 Cohort</strong> of our Email Marketing Training has officially closed as the session starts today at 8:00 PM.</p>
+          <p style="font-size: 15px; line-height: 1.5; color: #334155;">However, you have successfully secured a <strong>Priority Waitlist Seat</strong> for our upcoming free digital skills trainings (Email Marketing, AI Automation, Web Development & more).</p>
+
+          <div style="background: #f8fafc; padding: 20px; border-radius: 12px; border: 1px solid #e2e8f0; margin: 24px 0; color: #1e293b;">
+            <p style="margin: 6px 0; font-size: 14.5px;">✨ <strong>Priority Status:</strong> Active Waitlist Participant</p>
+            <p style="margin: 6px 0; font-size: 14.5px;">🔔 <strong>Notifications:</strong> You will be notified first via Email & WhatsApp as soon as the next cohort opens!</p>
+          </div>
+
+          <p style="margin-bottom: 20px; font-size: 15px; color: #334155;">Tap the button below right now to join our official WhatsApp Community for early updates & learning resources:</p>
+
+          <div style="text-align: center; margin: 28px 0;">
+            <a href="https://chat.whatsapp.com/FcCT3vtLEcqHRtMAYYQhfz?s=cl&p=a&ilr=0" target="_blank" style="display: inline-block; background: #25d366; color: #ffffff; font-weight: bold; text-decoration: none; padding: 14px 28px; border-radius: 12px; font-size: 15px; box-shadow: 0 4px 10px rgba(37,211,102,0.3);">Join Official WhatsApp Group →</a>
+          </div>
+
+          <hr style="border: none; border-top: 1px solid #e2e8f0; margin: 30px 0;" />
+          <p style="font-size: 12px; color: #64748b; text-align: center; margin: 0;">Organized by EaziNation (Digital Skills Trainer) & NFCS UNN.</p>
+        </div>
+      ` : `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 32px 24px; background: #ffffff; color: #0f172a; border-radius: 16px; border: 1px solid #e2e8f0; box-shadow: 0 4px 12px rgba(0,0,0,0.05);">
+          <h2 style="color: #6d28d9; margin-top: 0; font-size: 22px; font-weight: bold;">🎉 Registration Confirmed!</h2>
+          <p style="font-size: 15px; line-height: 1.5; color: #334155;">Hi <strong>${lead.name}</strong>,</p>
+          <p style="font-size: 15px; line-height: 1.5; color: #334155;">Your seat for the <strong>3-Day Live Email Marketing Training</strong> (hosted by NFCS UNN & EaziNation) has been successfully reserved.</p>
+          
+          <div style="background: #f8fafc; padding: 20px; border-radius: 12px; border: 1px solid #e2e8f0; margin: 24px 0; color: #1e293b;">
+            <p style="margin: 6px 0; font-size: 14.5px;">📅 <strong>Date:</strong> August 24 – 26, 2026</p>
+            <p style="margin: 6px 0; font-size: 14.5px;">⏰ <strong>Time:</strong> 8:00 PM – 10:00 PM (WAT)</p>
+            <p style="margin: 6px 0; font-size: 14.5px;">📍 <strong>Venue:</strong> Online Live (Meeting links posted in WhatsApp Group)</p>
+          </div>
+
+          <p style="margin-bottom: 20px; font-size: 15px; color: #334155;">Tap the button below right now to join the official WhatsApp Group for live session links & class materials:</p>
+          
+          <div style="text-align: center; margin: 28px 0;">
+            <a href="https://chat.whatsapp.com/FcCT3vtLEcqHRtMAYYQhfz?s=cl&p=a&ilr=0" target="_blank" style="display: inline-block; background: #25d366; color: #ffffff; font-weight: bold; text-decoration: none; padding: 14px 28px; border-radius: 12px; font-size: 15px; box-shadow: 0 4px 10px rgba(37,211,102,0.3);">Join Official WhatsApp Group →</a>
+          </div>
+
+          <hr style="border: none; border-top: 1px solid #e2e8f0; margin: 30px 0;" />
+          <p style="font-size: 12px; color: #64748b; text-align: center; margin: 0;">Organized by EaziNation (Digital Skills Trainer) & NFCS UNN.</p>
+        </div>
+      `;
+
       const emailRes = await fetch('https://api.resend.com/emails', {
         method: 'POST',
         headers: {
@@ -37,29 +93,8 @@ export default async function handler(req, res) {
         body: JSON.stringify({
           from: process.env.RESEND_FROM_EMAIL || 'onboarding@resend.dev',
           to: [lead.email],
-          subject: '🎉 Your Seat is Reserved! NFCS UNN Email Marketing Training',
-          html: `
-            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 32px 24px; background: #ffffff; color: #0f172a; border-radius: 16px; border: 1px solid #e2e8f0; box-shadow: 0 4px 12px rgba(0,0,0,0.05);">
-              <h2 style="color: #6d28d9; margin-top: 0; font-size: 22px; font-weight: bold;">🎉 Registration Confirmed!</h2>
-              <p style="font-size: 15px; line-height: 1.5; color: #334155;">Hi <strong>${lead.name}</strong>,</p>
-              <p style="font-size: 15px; line-height: 1.5; color: #334155;">Your seat for the <strong>3-Day Live Email Marketing Training</strong> (hosted by NFCS UNN & EaziNation) has been successfully reserved.</p>
-              
-              <div style="background: #f8fafc; padding: 20px; border-radius: 12px; border: 1px solid #e2e8f0; margin: 24px 0; color: #1e293b;">
-                <p style="margin: 6px 0; font-size: 14.5px;">📅 <strong>Date:</strong> August 24 – 26, 2026</p>
-                <p style="margin: 6px 0; font-size: 14.5px;">⏰ <strong>Time:</strong> 8:00 PM – 10:00 PM (WAT)</p>
-                <p style="margin: 6px 0; font-size: 14.5px;">📍 <strong>Venue:</strong> Online Live (Meeting links posted in WhatsApp Group)</p>
-              </div>
-
-              <p style="margin-bottom: 20px; font-size: 15px; color: #334155;">Tap the button below right now to join the official WhatsApp Group for live session links & class materials:</p>
-              
-              <div style="text-align: center; margin: 28px 0;">
-                <a href="https://chat.whatsapp.com/FcCT3vtLEcqHRtMAYYQhfz?s=cl&p=a&ilr=0" target="_blank" style="display: inline-block; background: #25d366; color: #ffffff; font-weight: bold; text-decoration: none; padding: 14px 28px; border-radius: 12px; font-size: 15px; box-shadow: 0 4px 10px rgba(37,211,102,0.3);">Join Official WhatsApp Group →</a>
-              </div>
-
-              <hr style="border: none; border-top: 1px solid #e2e8f0; margin: 30px 0;" />
-              <p style="font-size: 12px; color: #64748b; text-align: center; margin: 0;">Organized by EaziNation (Digital Skills Trainer) & NFCS UNN.</p>
-            </div>
-          `
+          subject: emailSubject,
+          html: emailHtml
         })
       });
 
@@ -80,9 +115,10 @@ export default async function handler(req, res) {
 
   return res.status(200).json({
     success: true,
+    isWaitlist: isWaitlist,
     count: updatedLeads.length,
     emailSent: emailSent,
     emailStatus: emailError ? `Error: ${emailError}` : 'Sent successfully',
-    message: 'Registration recorded successfully'
+    message: isWaitlist ? 'Waitlist registration recorded successfully' : 'Registration recorded successfully'
   });
 }

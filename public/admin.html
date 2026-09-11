@@ -344,6 +344,8 @@
   .badge-other { background: rgba(245, 158, 11, 0.2); color: var(--gold-light); border: 1px solid rgba(245, 158, 11, 0.4); }
   .badge-yes { background: rgba(16, 185, 129, 0.2); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.4); }
   .badge-no { background: rgba(239, 68, 68, 0.2); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.4); }
+  .badge-waitlist { background: rgba(245, 158, 11, 0.25); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.5); }
+  .badge-cohort { background: rgba(16, 185, 129, 0.2); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.4); }
 
   .wa-link {
     color: var(--green-wa);
@@ -496,6 +498,10 @@
         <div class="admin-stat-label">Total Leads</div>
       </div>
       <div class="admin-stat-card">
+        <div class="admin-stat-val" id="statWaitlist" style="color: #fbbf24;">0</div>
+        <div class="admin-stat-label">Waitlist Signups</div>
+      </div>
+      <div class="admin-stat-card">
         <div class="admin-stat-val" id="statUnn">0</div>
         <div class="admin-stat-label">UNN Students</div>
       </div>
@@ -523,7 +529,7 @@
     <!-- Search & Filter Bar -->
     <div class="search-box">
       <svg class="search-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
-      <input type="text" id="adminSearch" placeholder="Search by name, email, phone, status, or dept...">
+      <input type="text" id="adminSearch" placeholder="Search by name, email, phone, status, dept, or waitlist...">
     </div>
 
     <!-- Table -->
@@ -531,7 +537,7 @@
       <table id="leadsTable">
         <thead>
           <tr>
-            <th>Name</th><th>Email</th><th>Phone (Click to Send Group Link)</th><th>Status</th><th>NFCSer</th><th>Department</th><th>Why Join</th><th>Submitted</th><th>Action</th>
+            <th>Type</th><th>Name</th><th>Email</th><th>Phone (Click to Send Group Link)</th><th>Status</th><th>NFCSer</th><th>Department</th><th>Why / Topic</th><th>Submitted</th><th>Action</th>
           </tr>
         </thead>
         <tbody id="leadsBody"></tbody>
@@ -631,11 +637,13 @@ async function loadLeads(passcode){
 
 function updateStats(leads){
   const total = leads.length;
+  const waitlistCount = leads.filter(l => Boolean(l.isWaitlist || l.registrationType === 'waitlist' || l.type === 'waitlist')).length;
   const unnCount = leads.filter(l => (l.status || '').toLowerCase().includes('unn')).length;
   const nfcsCount = leads.filter(l => (l.nfcs || '').toLowerCase().startsWith('yes')).length;
-  const remainingSlots = Math.max(100 - total, 0);
+  const remainingSlots = Math.max(100 - (total - waitlistCount), 0);
 
   document.getElementById('statTotal').textContent = total;
+  document.getElementById('statWaitlist').textContent = waitlistCount;
   document.getElementById('statUnn').textContent = unnCount;
   document.getElementById('statNfcs').textContent = nfcsCount;
   document.getElementById('statRemaining').textContent = remainingSlots;
@@ -735,6 +743,7 @@ function renderLeads(leads){
 
   body.innerHTML = leads.map(l => {
     const waPhone = cleanPhoneForWa(l.phone);
+    const isWaitlist = Boolean(l.isWaitlist || l.registrationType === 'waitlist' || l.type === 'waitlist');
     const isUnn = (l.status || '').toLowerCase().includes('unn');
     const isNfcs = (l.nfcs || '').toLowerCase().startsWith('yes');
     const deleteKey = (l.submittedAt || l.email || l.phone || '').replace(/'/g, "\\'");
@@ -748,6 +757,7 @@ function renderLeads(leads){
 
     return `
       <tr>
+        <td><span class="badge ${isWaitlist ? 'badge-waitlist' : 'badge-cohort'}">${isWaitlist ? '⏳ WAITLIST' : '✅ COHORT'}</span></td>
         <td><strong>${l.name || ''}</strong></td>
         <td><a href="mailto:${l.email || ''}" style="color:var(--text-muted);">${l.email || ''}</a></td>
         <td style="white-space:nowrap;">
@@ -812,8 +822,11 @@ async function deleteLead(idKey, name){
 }
 
 function exportCSV(leads){
-  const headers = ['Name','Email','Phone','Status','NFCSer','Department','Why','Submitted At'];
-  const rows = leads.map(l => [l.name, l.email, l.phone, l.status, l.nfcs, l.dept, l.why, l.submittedAt]);
+  const headers = ['Type','Name','Email','Phone','Status','NFCSer','Department','Why / Topics','Submitted At'];
+  const rows = leads.map(l => [
+    (l.isWaitlist || l.registrationType === 'waitlist' || l.type === 'waitlist') ? 'Waitlist' : 'Cohort Registration',
+    l.name, l.email, l.phone, l.status, l.nfcs, l.dept, l.why, l.submittedAt
+  ]);
   const csv = [headers.map(csvEscape).join(','), ...rows.map(r => r.map(csvEscape).join(','))].join('\n');
   const blob = new Blob([csv], {type: 'text/csv'});
   const url = URL.createObjectURL(blob);
@@ -830,14 +843,18 @@ function filterLeads(){
     renderLeads(allLeads);
     return;
   }
-  const filtered = allLeads.filter(l => 
-    (l.name || '').toLowerCase().includes(query) ||
-    (l.email || '').toLowerCase().includes(query) ||
-    (l.phone || '').toLowerCase().includes(query) ||
-    (l.status || '').toLowerCase().includes(query) ||
-    (l.dept || '').toLowerCase().includes(query) ||
-    (l.why || '').toLowerCase().includes(query)
-  );
+  const filtered = allLeads.filter(l => {
+    const typeStr = (l.isWaitlist || l.registrationType === 'waitlist' || l.type === 'waitlist') ? 'waitlist' : 'cohort';
+    return (
+      typeStr.includes(query) ||
+      (l.name || '').toLowerCase().includes(query) ||
+      (l.email || '').toLowerCase().includes(query) ||
+      (l.phone || '').toLowerCase().includes(query) ||
+      (l.status || '').toLowerCase().includes(query) ||
+      (l.dept || '').toLowerCase().includes(query) ||
+      (l.why || '').toLowerCase().includes(query)
+    );
+  });
   renderLeads(filtered);
 }
 

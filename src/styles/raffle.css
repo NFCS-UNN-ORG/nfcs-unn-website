@@ -1,0 +1,352 @@
+/* Federation Week Raffle & Event Registration — Design Tokens & CSS Utilities */
+
+html {
+  width: 100% !important;
+  max-width: 100% !important;
+  overflow-x: hidden !important;
+  overflow-x: clip !important;
+  overflow-y: auto !important;
+}
+
+body {
+  width: 100% !important;
+  max-width: 100% !important;
+  overflow-x: hidden !important;
+  overflow-x: clip !important;
+  position: relative;
+}
+
+#root,
+.raffle-page,
+.app-page {
+  width: 100% !important;
+  max-width: 100% !important;
+  overflow-x: hidden !important;
+  overflow-x: clip !important;
+  position: relative;
+}
+
+.app-page {
+  /* Design Tokens mapped to new palette:
+     PRIMARY: #166C16 (Lush Green)
+     SECONDARY: #175319 (Dark Spruce)
+     ACCENT: #FBE202 (Bright Lemon Gold)
+     TEXT: #FFFFFF (Pure White)
+  */
+  --app-surface: rgba(23, 83, 25, 0.28);
+  --app-surface-elevated: rgba(22, 108, 22, 0.35);
+  --app-accent: #166C16;
+  --app-accent-hover: #175319;
+  --app-accent-light: #FBE202;
+  --app-accent-contrast: #FFFFFF;
+  --app-text-primary: #FFFFFF;
+  --app-text-muted: rgba(255, 255, 255, 0.72);
+  --app-border: rgba(245, 245, 245, 0.15);
+  --app-dark-bg: #0A1E0D;
+  --app-dark-canvas: #061408;
+
+  --color-surface: var(--app-surface);
+  --color-surface-elevated: var(--app-surface-elevated);
+  --color-accent: var(--app-accent);
+  --color-accent-contrast: var(--app-accent-contrast);
+  --color-text-primary: var(--app-text-primary);
+  --color-text-muted: var(--app-text-muted);
+  --color-border: var(--app-border);
+}
+
+/* Atmospheric Ambient Mesh Backdrop */
+.register-backdrop {
+  background-color: #061408;
+  background-image: 
+    radial-gradient(ellipse 85% 55% at 50% -10%, rgba(22, 108, 22, 0.55), transparent 70%),
+    radial-gradient(ellipse 65% 45% at 15% 30%, rgba(23, 83, 25, 0.45), transparent 60%),
+    radial-gradient(ellipse 55% 50% at 85% 65%, rgba(251, 226, 2, 0.14), transparent 55%),
+    radial-gradient(ellipse 70% 60% at 50% 110%, rgba(10, 30, 13, 0.95), transparent 80%);
+}
+
+/* Perforated ticket divider with semicircular cutouts */
+.ticket-perforation {
+  height: 1px;
+  border-top: 1px dashed rgba(255, 255, 255, 0.12);
+  position: relative;
+  margin: 0 28px;
+}
+
+.ticket-perforation::before,
+.ticket-perforation::after {
+  content: '';
+  position: absolute;
+  top: -10px;
+  width: 20px;
+  height: 20px;
+  background: var(--app-dark-canvas, #061408);
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.ticket-perforation::before {
+  left: -38px;
+}
+
+.ticket-perforation::after {
+  right: -38px;
+}
+
+/* Custom sleek root window scrollbar styled with yellow hex #FBE202 */
+html::-webkit-scrollbar {
+  width: 9px;
+  height: 9px;
+}
+html::-webkit-scrollbar-track {
+  background: #0B0B0F;
+}
+html::-webkit-scrollbar-thumb {
+  background: #FBE202;
+  border-radius: 9999px;
+  border: 2px solid #0B0B0F;
+}
+html::-webkit-scrollbar-thumb:hover {
+  background: #FDE047;
+}
+
+/* Ensure no secondary scrollbars are ever rendered on inner containers */
+body::-webkit-scrollbar,
+#root::-webkit-scrollbar,
+.raffle-page::-webkit-scrollbar,
+.app-page::-webkit-scrollbar,
+section::-webkit-scrollbar {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+}
+
+/* Firefox standard scrollbar in yellow for root window */
+html {
+  scrollbar-width: thin;
+  scrollbar-color: #FBE202 #0B0B0F;
+}
+
+.tickets-scrollbar::-webkit-scrollbar {
+  height: 5px;
+  width: 5px;
+}
+.tickets-scrollbar::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.04);
+  border-radius: 9999px;
+}
+.tickets-scrollbar::-webkit-scrollbar-thumb {
+  background: #FBE202;
+  border-radius: 9999px;
+}
+.tickets-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #FDE047;
+}
+.tickets-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: #FBE202 rgba(255, 255, 255, 0.04);
+}
+
+/* Clean Underline Input Fields without box container (High-End Fintech aesthetic) */
+.underline-input {
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 0;
+  outline: none;
+  padding: 10px 0;
+  color: #FFFFFF;
+  transition: border-color 0.25s ease, box-shadow 0.25s ease;
+}
+
+.underline-input:focus {
+  outline: none;
+  border-bottom-color: var(--app-accent-light, #FBE202);
+  box-shadow: 0 1px 0 0 var(--app-accent-light, #FBE202);
+}
+
+/* Browser Autocomplete / Autofill Transparency Override */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+input:-webkit-autofill:active,
+select:-webkit-autofill,
+select:-webkit-autofill:hover,
+select:-webkit-autofill:focus,
+select:-webkit-autofill:active {
+  -webkit-box-shadow: 0 0 0 1000px rgba(0, 0, 0, 0) inset !important;
+  box-shadow: 0 0 0 1000px rgba(0, 0, 0, 0) inset !important;
+  -webkit-text-fill-color: #FFFFFF !important;
+  caret-color: #FFFFFF !important;
+  background-color: transparent !important;
+  background-clip: content-box !important;
+  transition: background-color 9999999s ease-in-out 0s, color 9999999s ease-in-out 0s !important;
+}
+
+input:autofill,
+select:autofill {
+  background-color: transparent !important;
+  color: #FFFFFF !important;
+  -webkit-text-fill-color: #FFFFFF !important;
+  box-shadow: 0 0 0 1000px rgba(0, 0, 0, 0) inset !important;
+  transition: background-color 9999999s ease-in-out 0s, color 9999999s ease-in-out 0s !important;
+}
+
+.underline-input:-webkit-autofill,
+.underline-input:-webkit-autofill:hover,
+.underline-input:-webkit-autofill:focus,
+.underline-input:-webkit-autofill:active {
+  -webkit-box-shadow: 0 0 0 1000px rgba(0, 0, 0, 0) inset !important;
+  box-shadow: 0 0 0 1000px rgba(0, 0, 0, 0) inset !important;
+  -webkit-text-fill-color: #FFFFFF !important;
+  caret-color: #FFFFFF !important;
+  background-color: transparent !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12) !important;
+  transition: background-color 9999999s ease-in-out 0s, color 9999999s ease-in-out 0s !important;
+}
+
+.underline-input:-webkit-autofill:focus {
+  border-bottom: 1px solid var(--app-accent-light, #FBE202) !important;
+  box-shadow: 0 1px 0 0 var(--app-accent-light, #FBE202), 0 0 0 1000px rgba(0, 0, 0, 0) inset !important;
+}
+
+/* Base scooped card inside negative-curve-wrapper */
+.negative-curve-card {
+  border-radius: 20px;
+  corner-shape: scoop;
+  position: relative;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  -webkit-mask:
+    radial-gradient(circle 16px at 0 0, transparent 98%, #000 100%) top left,
+    radial-gradient(circle 16px at 100% 0, transparent 98%, #000 100%) top right,
+    radial-gradient(circle 16px at 0 100%, transparent 98%, #000 100%) bottom left,
+    radial-gradient(circle 16px at 100% 100%, transparent 98%, #000 100%) bottom right;
+  -webkit-mask-size: 51% 51%;
+  -webkit-mask-repeat: no-repeat;
+  mask:
+    radial-gradient(circle 16px at 0 0, transparent 98%, #000 100%) top left,
+    radial-gradient(circle 16px at 100% 0, transparent 98%, #000 100%) top right,
+    radial-gradient(circle 16px at 0 100%, transparent 98%, #000 100%) bottom left,
+    radial-gradient(circle 16px at 100% 100%, transparent 98%, #000 100%) bottom right;
+  mask-size: 51% 51%;
+  mask-repeat: no-repeat;
+}
+
+/* Outer wrapper that gives negative-curve-card an inner whitesmoke-bordered scoop line at 15% opacity */
+.negative-curve-wrapper {
+  position: relative;
+  border-radius: 20px;
+  corner-shape: scoop;
+  padding: 0.5px;
+  background: rgba(245, 245, 245, 0.15);
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  -webkit-mask:
+    radial-gradient(circle 16px at 0 0, transparent 98%, #000 100%) top left,
+    radial-gradient(circle 16px at 100% 0, transparent 98%, #000 100%) top right,
+    radial-gradient(circle 16px at 0 100%, transparent 98%, #000 100%) bottom left,
+    radial-gradient(circle 16px at 100% 100%, transparent 98%, #000 100%) bottom right;
+  -webkit-mask-size: 51% 51%;
+  -webkit-mask-repeat: no-repeat;
+  mask:
+    radial-gradient(circle 16px at 0 0, transparent 98%, #000 100%) top left,
+    radial-gradient(circle 16px at 100% 0, transparent 98%, #000 100%) top right,
+    radial-gradient(circle 16px at 0 100%, transparent 98%, #000 100%) bottom left,
+    radial-gradient(circle 16px at 100% 100%, transparent 98%, #000 100%) bottom right;
+  mask-size: 51% 51%;
+  mask-repeat: no-repeat;
+}
+
+/* 3D Depth Volumetric Text Styles for Hero */
+.hero-3d-white {
+  color: #FFFFFF;
+  text-shadow:
+    0 1px 0 #E2E8F0,
+    0 2px 0 #CBD5E1,
+    0 3px 0 #94A3B8,
+    0 4px 0 #64748B,
+    0 5px 0 #166C16,
+    0 6px 0 #175319,
+    0 8px 1px rgba(0, 0, 0, 0.4),
+    0 12px 24px rgba(0, 0, 0, 0.8),
+    0 22px 45px rgba(0, 0, 0, 0.95);
+  filter: drop-shadow(0 15px 30px rgba(0, 0, 0, 0.9));
+}
+
+.hero-3d-gold {
+  color: #FBE202;
+  text-shadow:
+    0 1px 0 #FFFBEB,
+    0 2px 0 #FEF08A,
+    0 3px 0 #FDE047,
+    0 4px 0 #EAB308,
+    0 5px 0 #166C16,
+    0 6px 0 #175319,
+    0 8px 1px rgba(0, 0, 0, 0.4),
+    0 12px 24px rgba(0, 0, 0, 0.8),
+    0 22px 45px rgba(0, 0, 0, 0.95);
+  filter: drop-shadow(0 15px 30px rgba(251, 226, 2, 0.3));
+}
+
+/* Gold Coin Custom Mouse Pointer */
+.app-page,
+.app-page * {
+  cursor: url('/gold-coin-cursor.svg') 16 16, auto;
+}
+
+.app-page button,
+.app-page a,
+.app-page [role="button"],
+.app-page .cursor-pointer {
+  cursor: url('/gold-coin-cursor.svg') 16 16, pointer !important;
+}
+
+.app-page input,
+.app-page select,
+.app-page textarea {
+  cursor: text !important;
+}
+
+/* Performance overrides: prevent global 0.4s transitions from thrashing animations & scroll */
+.app-page div,
+.app-page span,
+.app-page section,
+.app-page main,
+.app-page header {
+  transition-duration: 0.15s;
+}
+
+.app-page canvas,
+.app-page svg {
+  transition: none !important;
+}
+
+/* Custom visible scrollbar for walk-in registration modal form */
+.walkin-form-scroll {
+  overflow-y: auto !important;
+  scrollbar-width: thin;
+  scrollbar-color: #166C16 #f1f5f9;
+}
+
+.walkin-form-scroll::-webkit-scrollbar {
+  width: 6px;
+}
+
+.walkin-form-scroll::-webkit-scrollbar-track {
+  background: #f1f5f9;
+  border-radius: 9999px;
+  margin: 4px 0;
+}
+
+.walkin-form-scroll::-webkit-scrollbar-thumb {
+  background: #166C16;
+  border-radius: 9999px;
+}
+
+.walkin-form-scroll::-webkit-scrollbar-thumb:hover {
+  background: #175319;
+}
+
+

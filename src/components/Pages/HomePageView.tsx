@@ -9,6 +9,7 @@ import { CampaignsGrid } from '../CampaignsGrid';
 import { ChaplaincySpotlight } from '../ChaplaincySpotlight';
 import { TestimonialsSection } from '../TestimonialsSection';
 import { NewsletterBanner } from '../NewsletterBanner';
+import { FederationWeekAnnouncementModal } from '../FederationWeekAnnouncementModal';
 import { PageTab } from '../../types';
 
 interface HomePageViewProps {
@@ -18,6 +19,13 @@ interface HomePageViewProps {
 export const HomePageView: React.FC<HomePageViewProps> = ({ onNavigate }) => {
   return (
     <div className="space-y-0">
+      <FederationWeekAnnouncementModal
+        onNavigateRaffle={() => {
+          window.history.pushState({}, '', '/raffle-draw');
+          window.dispatchEvent(new PopStateEvent('popstate'));
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        }}
+      />
       <HeroSection onNavigate={onNavigate} />
       <FeaturedPrograms onNavigate={onNavigate} />
       <ImpactStatsSection />
