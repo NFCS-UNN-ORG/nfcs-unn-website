@@ -22,6 +22,7 @@ import {
   Banknote,
   Sparkles,
   Mail,
+  Loader2,
 } from 'lucide-react';
 
 const ADMIN_SECRET_STORAGE_KEY = 'nfcs_admin_secret';
@@ -35,13 +36,18 @@ function calculateBonusTickets(qty) {
 
 export default function RaffleAdmin() {
   const [secret, setSecret] = useState(localStorage.getItem(ADMIN_SECRET_STORAGE_KEY) || '');
-  const [unlocked, setUnlocked] = useState(!!secret);
+  const [unlocked, setUnlocked] = useState(false);
+  const [isVerifyingSavedSecret, setIsVerifyingSavedSecret] = useState(
+    !!localStorage.getItem(ADMIN_SECRET_STORAGE_KEY)
+  );
   const [summary, setSummary] = useState(null);
   const [orders, setOrders] = useState([]);
   const [search, setSearch] = useState('');
   const [channelFilter, setChannelFilter] = useState('all'); // 'all' | 'online' | 'walk-in'
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [copiedTicket, setCopiedTicket] = useState('');
+  const [unlocking, setUnlocking] = useState(false);
+  const [unlockError, setUnlockError] = useState('');
 
   // Walk-in Registration Modal State
   const [isWalkInModalOpen, setIsWalkInModalOpen] = useState(false);
@@ -57,6 +63,18 @@ export default function RaffleAdmin() {
   const [manualResult, setManualResult] = useState(null);
   const [manualError, setManualError] = useState('');
   const [manualLoading, setManualLoading] = useState(false);
+
+  // On mount: if a secret is saved in localStorage, test it against /api/admin-verify
+  useEffect(() => {
+    const saved = localStorage.getItem(ADMIN_SECRET_STORAGE_KEY);
+    if (saved) {
+      unlock(saved).finally(() => {
+        setIsVerifyingSavedSecret(false);
+      });
+    } else {
+      setIsVerifyingSavedSecret(false);
+    }
+  }, []);
 
   useEffect(() => {
     if (unlocked) {
@@ -99,6 +117,12 @@ export default function RaffleAdmin() {
         const data = await res.json();
         setOrders(data || []);
       } else {
+        if (res.status === 401) {
+          // Saved secret is invalid or expired
+          logout();
+          setUnlockError('Admin session expired or invalid passcode. Please re-enter.');
+          return;
+        }
         const errData = await res.json().catch(() => ({}));
         console.error('Failed to fetch admin orders:', errData.error || res.statusText);
       }
@@ -113,18 +137,52 @@ export default function RaffleAdmin() {
     setTimeout(() => setIsRefreshing(false), 450);
   }
 
-  function unlock() {
-    if (!secret.trim()) return;
-    localStorage.setItem(ADMIN_SECRET_STORAGE_KEY, secret);
-    setUnlocked(true);
-    refreshSummary();
-    refreshOrders(secret);
+  async function unlock(enteredSecret) {
+    const keyToTest = (enteredSecret !== undefined ? enteredSecret : secret).trim();
+    if (!keyToTest) {
+      setUnlockError('Please enter the admin passcode');
+      return;
+    }
+
+    setUnlocking(true);
+    setUnlockError('');
+
+    try {
+      const res = await fetch('/api/admin-verify', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ secret: keyToTest }),
+      });
+
+      const data = await res.json().catch(() => ({}));
+
+      if (!res.ok) {
+        setUnlockError(data.error || 'Incorrect admin passcode. Access denied.');
+        setUnlocked(false);
+        return;
+      }
+
+      // Passcode verified by server!
+      localStorage.setItem(ADMIN_SECRET_STORAGE_KEY, keyToTest);
+      setSecret(keyToTest);
+      setUnlocked(true);
+      refreshSummary();
+      refreshOrders(keyToTest);
+    } catch (err) {
+      console.error('Unlock verification error:', err);
+      setUnlockError('Network error — please check your internet connection and try again.');
+    } finally {
+      setUnlocking(false);
+    }
   }
 
   function logout() {
     localStorage.removeItem(ADMIN_SECRET_STORAGE_KEY);
     setSecret('');
     setUnlocked(false);
+    setUnlockError('');
+    setOrders([]);
+    setSummary(null);
   }
 
   async function submitManualEntry(e) {
@@ -309,8 +367,19 @@ export default function RaffleAdmin() {
     return orders.filter((o) => o.channel === 'walk-in').length;
   }, [orders]);
 
-  // Passcode Lock Screen
+  // Passcode Lock Screen (or initial authentication check)
   if (!unlocked) {
+    if (isVerifyingSavedSecret) {
+      return (
+        <div className="min-h-screen bg-gradient-to-b from-[#F2F8F2] via-stone-50 to-white flex items-center justify-center p-4 font-sans">
+          <div className="text-center space-y-3">
+            <div className="size-10 border-3 border-[#166C16] border-t-transparent rounded-full animate-spin mx-auto" />
+            <p className="text-sm font-bold text-stone-700">Verifying admin credentials…</p>
+          </div>
+        </div>
+      );
+    }
+
     return (
       <div className="min-h-screen bg-gradient-to-b from-[#F2F8F2] via-stone-50 to-white flex items-center justify-center p-4 font-sans relative overflow-hidden">
         {/* Ambient background orbs */}
@@ -335,17 +404,41 @@ export default function RaffleAdmin() {
                 type="password"
                 placeholder="Enter admin passcode"
                 value={secret}
-                onChange={(e) => setSecret(e.target.value)}
-                onKeyDown={(e) => e.key === 'Enter' && unlock()}
+                onChange={(e) => {
+                  setSecret(e.target.value);
+                  if (unlockError) setUnlockError('');
+                }}
+                onKeyDown={(e) => e.key === 'Enter' && !unlocking && unlock()}
                 autoFocus
-                className="w-full px-4 py-3.5 bg-stone-50 border border-stone-200 rounded-2xl text-stone-900 text-sm font-bold focus:outline-none focus:border-[#166C16] focus:ring-2 focus:ring-[#166C16]/20 transition-all placeholder:text-stone-400 placeholder:font-normal"
+                disabled={unlocking}
+                className="w-full px-4 py-3.5 bg-stone-50 border border-stone-200 rounded-2xl text-stone-900 text-sm font-bold focus:outline-none focus:border-[#166C16] focus:ring-2 focus:ring-[#166C16]/20 transition-all placeholder:text-stone-400 placeholder:font-normal disabled:opacity-50"
               />
             </div>
+
+            {unlockError && (
+              <motion.div
+                initial={{ opacity: 0, y: -6 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="p-3 bg-red-50 border border-red-200 rounded-xl flex items-center gap-2 text-xs text-red-700 font-bold"
+              >
+                <AlertCircle className="w-4 h-4 shrink-0 text-red-600" />
+                <span>{unlockError}</span>
+              </motion.div>
+            )}
+
             <button
-              onClick={unlock}
-              className="w-full py-3.5 bg-[#166C16] hover:bg-[#175319] text-[#FFFFFF] font-black text-sm rounded-2xl shadow-lg hover:shadow-xl transition-all cursor-pointer active:scale-95 border border-[#FBE202]/30 flex items-center justify-center gap-2"
+              onClick={() => unlock()}
+              disabled={unlocking || !secret.trim()}
+              className="w-full py-3.5 bg-[#166C16] hover:bg-[#175319] disabled:opacity-50 disabled:cursor-not-allowed text-[#FFFFFF] font-black text-sm rounded-2xl shadow-lg hover:shadow-xl transition-all cursor-pointer active:scale-95 border border-[#FBE202]/30 flex items-center justify-center gap-2"
             >
-              <span>Unlock Dashboard</span>
+              {unlocking ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin text-[#FBE202]" />
+                  <span>Verifying Passcode…</span>
+                </>
+              ) : (
+                <span>Unlock Dashboard</span>
+              )}
             </button>
           </div>
 
