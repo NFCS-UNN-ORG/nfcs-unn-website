@@ -346,6 +346,8 @@ export default async function handler(req, res) {
         emailError = err.message;
         console.warn('Resend email exception in manual-entry:', err);
       }
+    }
+
     // Trigger referral milestone processing in background
     if (cleanReferredBy) {
       processReferralMilestones(supabase, cleanReferredBy).catch((err) =>

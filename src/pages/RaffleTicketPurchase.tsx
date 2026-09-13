@@ -363,6 +363,13 @@ export default function RaffleTicketPurchase() {
     const buyerGender = buyerData?.gender || gender;
 
     const canonicalBuyerPhone = normalizeNigerianPhone(buyerPhone) || buyerPhone;
+    
+    let activeRef = referredBy;
+    if (!activeRef && typeof window !== 'undefined') {
+      try {
+        activeRef = localStorage.getItem('nfcs_raffle_ref') || '';
+      } catch {}
+    }
     const canonicalActiveRef = activeRef ? (normalizeNigerianPhone(activeRef) || activeRef) : null;
 
     try {

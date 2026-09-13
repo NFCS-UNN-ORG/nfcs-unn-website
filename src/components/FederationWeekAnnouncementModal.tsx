@@ -112,7 +112,7 @@ export const FederationWeekAnnouncementModal: React.FC<FederationWeekAnnouncemen
       opacity: 1,
       scale: 1,
       transition: {
-        x: { type: 'spring', stiffness: 320, damping: 30 },
+        x: { type: 'spring' as const, stiffness: 320, damping: 30 },
         opacity: { duration: 0.28 },
       },
     },
@@ -121,7 +121,7 @@ export const FederationWeekAnnouncementModal: React.FC<FederationWeekAnnouncemen
       opacity: 0,
       scale: 0.96,
       transition: {
-        x: { type: 'spring', stiffness: 320, damping: 30 },
+        x: { type: 'spring' as const, stiffness: 320, damping: 30 },
         opacity: { duration: 0.28 },
       },
     }),

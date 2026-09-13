@@ -602,7 +602,7 @@ export default function RaffleAdmin() {
               title="Print all sold tickets formatted for the physical raffle drum"
             >
               <Printer className="w-4 h-4 text-[#FBE202]" />
-              <span>Print Drum Slips ({totalTicketsInSystem})</span>
+              <span>Print Tickets ({totalTicketsInSystem})</span>
             </button>
 
             {/* Export CSV */}
