@@ -125,6 +125,23 @@
   animation-play-state: paused !important;
 }
 
+/* Continuous Marquee for Featured Programs & Fellowship Cards */
+@keyframes marquee-cards {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+.animate-marquee-cards {
+  display: flex;
+  width: max-content;
+  animation: marquee-cards 45s linear infinite;
+  will-change: transform;
+}
+
+.animate-marquee-cards:hover {
+  animation-play-state: paused;
+}
+
 /* ============================================================
    Dark Mode Base Styling
    ============================================================ */

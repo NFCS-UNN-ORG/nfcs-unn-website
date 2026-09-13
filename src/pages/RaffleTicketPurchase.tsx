@@ -799,7 +799,7 @@ export default function RaffleTicketPurchase() {
                           <div className="flex items-center gap-2">
                             {ticketsSold !== null && (
                               <span className="inline-flex items-center gap-1.5 text-xs font-bold text-[#FBE202] bg-[#166C16]/50 px-3 py-1 rounded-full border-[0.5px] border-[#FBE202]/25 shadow-xs">
-                                <span className="size-2 rounded-full bg-[#FBE202] animate-pulse" />
+                                <span className="size-2 rounded-full bg-[#FBE202] shadow-[0_0_8px_#FBE202]" />
                                 <AnimatedTicketCounter count={ticketsSold} /> sold 🔥
                               </span>
                             )}
@@ -904,7 +904,7 @@ export default function RaffleTicketPurchase() {
                           </div>
 
                           {loading && (
-                            <div className="mb-4 p-4 rounded-2xl bg-[#166C16]/35 border-[0.5px] border-[#FBE202]/30 flex items-center gap-3 animate-pulse">
+                            <div className="mb-4 p-4 rounded-2xl bg-[#166C16]/35 border-[0.5px] border-[#FBE202]/30 flex items-center gap-3">
                               <Loader2 className="w-5 h-5 animate-spin text-[#FBE202] shrink-0" />
                               <div>
                                 <p className="text-xs font-bold text-white">Payment received! Issuing your official tickets…</p>
@@ -968,7 +968,7 @@ export default function RaffleTicketPurchase() {
               className="max-w-md w-full p-8 rounded-3xl bg-[#0A1E0D]/95 border border-white/20 shadow-[0_25px_60px_rgba(0,0,0,0.95)] flex flex-col items-center space-y-5"
             >
               <div className="relative size-20 flex items-center justify-center">
-                <div className="absolute inset-0 rounded-full bg-[#166C16] blur-xl opacity-70 animate-pulse" />
+                <div className="absolute inset-0 rounded-full bg-[#166C16] blur-xl opacity-70" />
                 <div className="size-20 rounded-full border-4 border-white/10 border-t-[#FBE202] animate-spin" />
                 <span className="absolute text-3xl select-none">🎟️</span>
               </div>

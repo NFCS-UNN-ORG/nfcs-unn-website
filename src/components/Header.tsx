@@ -7,6 +7,7 @@ import { ResizableNavbar, NavBody, MobileNav, useNavbarVisibility } from './ui/r
 import { ThemeToggle } from './ThemeToggle';
 import { DesktopNavDropdowns } from './header/DesktopNavDropdowns';
 import { MobileNavMenu } from './header/MobileNavMenu';
+import { RightSideNav } from './header/RightSideNav';
 
 interface HeaderProps {
   activeTab: PageTab;
@@ -157,6 +158,58 @@ export const Header: React.FC<HeaderProps> = ({ activeTab, setActiveTab }) => {
       desc: 'Unified chapter calendar (Masses, organs, events)',
     },
   ];
+
+  // For the main page ('home'), render right-side vertical navigation
+  if (activeTab === 'home') {
+    return (
+      <>
+        {/* Top Announcement Bar */}
+        <TopNotificationBar onNavigate={setActiveTab} />
+
+        {/* Minimal Transparent Top Bar for Main Page */}
+        <header className="sticky top-0 z-40 w-full bg-transparent">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex items-center justify-between">
+            {/* Top-left Chaplaincy Brand Logo (+10% size) with NFCS UNN text */}
+            <button
+              onClick={() => {
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+              }}
+              className="flex items-center gap-3 text-left group focus:outline-hidden cursor-pointer shrink-0"
+              aria-label="NFCS UNN Home"
+            >
+              <div className="shrink-0 group-hover:scale-105 transition-transform duration-200">
+                <NfcsLogo size={55} />
+              </div>
+              <div className="flex flex-col">
+                <span className="text-base sm:text-lg font-bold tracking-tight text-white group-hover:text-amber-300 transition-colors leading-none">
+                  NFCS UNN
+                </span>
+                <span className="text-[10px] text-slate-300 font-light tracking-wider uppercase leading-tight pt-1">
+                  St. Peter's Chaplaincy
+                </span>
+              </div>
+            </button>
+
+            {/* Mobile Drawer on small screens where right-side nav is hidden */}
+            <div className="lg:hidden">
+              <MobileNavMenu
+                activeTab={activeTab}
+                setActiveTab={setActiveTab}
+                mobileMenuOpen={mobileMenuOpen}
+                setMobileMenuOpen={setMobileMenuOpen}
+                structureMenu={structureMenu}
+                highlightsMenu={highlightsMenu}
+                resourcesMenu={resourcesMenu}
+              />
+            </div>
+          </div>
+        </header>
+
+        {/* Right Side Navigation (Main page only) */}
+        <RightSideNav activeTab={activeTab} onNavigate={setActiveTab} />
+      </>
+    );
+  }
 
   return (
     <>

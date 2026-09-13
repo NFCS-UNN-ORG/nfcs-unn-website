@@ -30,6 +30,21 @@ export default function App() {
     typeof window !== 'undefined' ? window.location.pathname.replace(/\/$/, '') || '/' : '/'
   );
 
+  // Ensure scroll position is not preserved on refresh
+  React.useEffect(() => {
+    if (typeof window !== 'undefined') {
+      if ('scrollRestoration' in window.history) {
+        window.history.scrollRestoration = 'manual';
+      }
+      window.scrollTo(0, 0);
+      const handleBeforeUnload = () => {
+        window.scrollTo(0, 0);
+      };
+      window.addEventListener('beforeunload', handleBeforeUnload);
+      return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+    }
+  }, []);
+
   React.useEffect(() => {
     const handleLocationChange = () => {
       const path = window.location.pathname.replace(/\/$/, '') || '/';
@@ -148,9 +163,11 @@ export default function App() {
           </main>
         </div>
 
-        <Footer
-          onNavigate={handleNavigate}
-        />
+        {activeTab !== 'home' && (
+          <Footer
+            onNavigate={handleNavigate}
+          />
+        )}
       </div>
     </ThemeProvider>
   );

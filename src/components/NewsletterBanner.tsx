@@ -17,9 +17,9 @@ export const NewsletterBanner: React.FC = () => {
 
   return (
     <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 my-16">
-      <div className="bg-emerald-900 rounded-3xl p-8 sm:p-12 text-white shadow-2xl relative overflow-hidden">
+      <div className="bg-[#16342a]/80 backdrop-blur-xl border border-white/15 rounded-3xl p-8 sm:p-12 text-white shadow-2xl relative overflow-hidden">
         {/* Decorative background radial light */}
-        <div className="absolute top-0 right-0 w-96 h-96 bg-emerald-700/30 rounded-full blur-3xl pointer-events-none"></div>
+        <div className="absolute top-0 right-0 w-96 h-96 bg-[#4D2EAB]/20 rounded-full blur-3xl pointer-events-none"></div>
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center relative z-10">
           

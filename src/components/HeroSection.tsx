@@ -1,104 +1,137 @@
-import React from 'react';
-import { ArrowUpRight, BookOpen } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { ArrowUpRight, Compass, Users } from 'lucide-react';
+import { motion } from 'framer-motion';
 import { PageTab } from '../types';
 import { SITE_INFO } from '../data/nfcsData';
 
 interface HeroSectionProps {
   onNavigate: (tab: PageTab) => void;
+  isModelReady?: boolean;
 }
 
-export const HeroSection: React.FC<HeroSectionProps> = ({ onNavigate }) => {
-  return (
-    <section className="relative -mt-[70px] pt-[76px] lg:pt-[96px] pb-24 lg:pb-32 overflow-x-hidden bg-gradient-to-b from-[#F5F2FF] via-stone-50 to-white dark:from-[#0D103D] dark:via-[#080A26] dark:to-[#080A26] text-stone-900 dark:text-slate-100 transition-colors duration-400">
-      {/* Ambient Glowing Background Orbs */}
-      <div className="absolute -top-24 left-1/4 w-96 h-96 bg-[#4D2EAB]/15 dark:bg-[#4D2EAB]/25 rounded-full blur-3xl pointer-events-none" />
-      <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-emerald-500/10 dark:bg-indigo-500/15 rounded-full blur-3xl pointer-events-none" />
+export const HeroSection: React.FC<HeroSectionProps> = ({ onNavigate, isModelReady = true }) => {
+  const fullHeadline = 'Building A Strong Catholic Community At UNN';
+  const [displayedHeadline, setDisplayedHeadline] = useState('');
 
-      {/* Repeating Diagonal Marquee Background Ribbon */}
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[140%] rotate-[-6deg] bg-[#4D2EAB]/5 dark:bg-white/5 py-3.5 pointer-events-none select-none overflow-hidden whitespace-nowrap z-0">
-        <div className="text-[#4D2EAB]/15 dark:text-white/10 font-black text-2xl sm:text-4xl tracking-widest uppercase flex gap-8 animate-marquee">
-          <span>LIVING THE FAITH • WHO CARES? NFCS DOES! • ST. PETER'S CHAPLAINCY UNN • EST. 1956 •</span>
-          <span>LIVING THE FAITH • WHO CARES? NFCS DOES! • ST. PETER'S CHAPLAINCY UNN • EST. 1956 •</span>
-        </div>
-      </div>
+  useEffect(() => {
+    if (!isModelReady) return;
+    let idx = 0;
+    setDisplayedHeadline('');
+    const timer = setInterval(() => {
+      idx++;
+      setDisplayedHeadline(fullHeadline.slice(0, idx));
+      if (idx >= fullHeadline.length) {
+        clearInterval(timer);
+      }
+    }, 42);
+
+    return () => clearInterval(timer);
+  }, [isModelReady]);
+
+  return (
+    <section id="hero" className="relative -mt-[70px] pt-[76px] lg:pt-[96px] pb-24 lg:pb-36 overflow-x-hidden bg-transparent text-white transition-colors duration-400">
+      {/* Ambient Glowing Subtle Orbs */}
+      <div className="absolute -top-24 left-1/6 w-96 h-96 bg-[#4D2EAB]/20 rounded-full blur-3xl pointer-events-none" />
+      <div className="absolute bottom-10 right-1/6 w-96 h-96 bg-indigo-600/15 rounded-full blur-3xl pointer-events-none" />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+        {/* Restructured Editorial Hero Layout with tighter spacing, 5vw left padding */}
+        <div className="max-w-3xl pt-[7vh] pl-[5vw] space-y-3.5 text-left">
 
-          {/* Left Angled Media Frame */}
-          <div className="hidden lg:block lg:col-span-3 transform -rotate-6 hover:rotate-0 transition-all duration-500 hover:scale-105">
-            <div className="bg-[#4D2EAB]/5 dark:bg-slate-900/80 p-3 rounded-2xl shadow-2xl border border-[#4D2EAB]/20 dark:border-slate-800/80 backdrop-blur-md">
-              <div className="relative aspect-4/5 rounded-xl bg-stone-200 dark:bg-slate-800 overflow-hidden flex flex-col items-center justify-center p-4 group">
+          {/* 'Living the Faith.' with 600 weight, 12% size increase, and small period */}
+          <motion.div
+            initial={{ opacity: 0, y: 14 }}
+            animate={isModelReady ? { opacity: 1, y: 0 } : { opacity: 0, y: 14 }}
+            transition={{ duration: 0.8, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
+            className="text-2xl sm:text-[1.75rem] lg:text-[2.1rem] font-semibold text-slate-200 tracking-wide leading-none"
+          >
+            Living the Faith<span className="text-amber-400">.</span>
+          </motion.div>
+
+          {/* Large Editorial Headline with reduced weight (font-thin 100) */}
+          <motion.h1
+            initial={{ opacity: 0, y: 18 }}
+            animate={isModelReady ? { opacity: 1, y: 0 } : { opacity: 0, y: 18 }}
+            transition={{ duration: 0.9, delay: 0.35, ease: [0.16, 1, 0.3, 1] }}
+            className="text-4xl sm:text-6xl lg:text-7xl font-thin tracking-tight text-white leading-[1.04] min-h-[2.1em] sm:min-h-[1.95em]"
+          >
+            <span className="font-thin text-white" style={{ fontWeight: 100 }}>
+              {displayedHeadline}
+            </span>
+            <motion.span
+              animate={{ opacity: [1, 0, 1] }}
+              transition={{ duration: 0.8, repeat: Infinity, ease: 'linear' }}
+              className="inline-block text-amber-400 font-normal ml-0.5 select-none"
+            >
+              _
+            </motion.span>
+          </motion.h1>
+
+          {/* Specified Subtext with 10% heavier weight (font-normal text-slate-200) and brotherhood */}
+          <motion.p
+            initial={{ opacity: 0, y: 16 }}
+            animate={isModelReady ? { opacity: 1, y: 0 } : { opacity: 0, y: 16 }}
+            transition={{ duration: 0.9, delay: 0.55, ease: [0.16, 1, 0.3, 1] }}
+            className="text-slate-200 text-base sm:text-lg lg:text-xl leading-normal font-normal max-w-2xl pt-0.5"
+          >
+            Growing together in prayer, academic excellence, leadership, and lifelong Catholic brotherhood.
+          </motion.p>
+
+          {/* Actions Row: Go to Portal & Explore */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={isModelReady ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
+            transition={{ duration: 1.0, delay: 0.85, ease: [0.16, 1, 0.3, 1] }}
+            className="flex flex-wrap items-center gap-4 pt-4"
+          >
+            <a
+              href={SITE_INFO.portalUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-2 bg-[#4D2EAB] hover:bg-[#3B2285] text-white font-semibold text-sm sm:text-base px-8 py-3.5 rounded-full shadow-2xl hover:shadow-purple-900/30 transition-all duration-200 transform hover:-translate-y-0.5 active:scale-95 cursor-pointer"
+            >
+              <span>Go to Portal</span>
+              <ArrowUpRight className="w-4 h-4 text-white" />
+            </a>
+
+            <button
+              onClick={() => {
+                const el = document.getElementById('impact-stats');
+                if (el) {
+                  el.scrollIntoView({ behavior: 'smooth' });
+                }
+              }}
+              className="flex items-center gap-2 bg-white/10 hover:bg-white/20 text-white font-medium text-sm sm:text-base px-7 py-3.5 rounded-full border border-white/25 backdrop-blur-xl shadow-lg transition-all duration-200 active:scale-95 cursor-pointer"
+            >
+              <Compass className="w-4 h-4 text-slate-200" />
+              <span>Explore</span>
+            </button>
+
+            {/* Community Avatar Pill */}
+            <div className="flex items-center gap-3 pl-1 sm:pl-3 pt-2 sm:pt-0">
+              <div className="flex -space-x-2 overflow-hidden">
                 <img
-                  src="/assets/st-albert.jpg"
-                  alt="St. Albert the Great"
-                  className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                  className="inline-block h-8 w-8 rounded-full ring-2 ring-white/40 object-cover"
+                  src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=120"
+                  alt="Member"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/20 to-transparent"></div>
-                <div className="relative z-10 text-white mt-auto text-center p-2">
-                  <span className="text-[10px] uppercase tracking-wider font-bold bg-[#4D2EAB] px-2.5 py-1 rounded-full shadow-sm">
-                    Patron Saint
-                  </span>
-                  <p className="text-xs font-semibold mt-1.5 text-white/95">St. Albert the Great</p>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Center Hero Content Column */}
-          <div className="lg:col-span-6 text-center max-w-2xl mx-auto space-y-6">
-
-            {/* Main Headline */}
-            <h1 className="text-3xl sm:text-5xl lg:text-5xl font-extrabold text-stone-900 dark:text-white tracking-tight leading-tight">
-              Living The Faith, Building A Strong Catholic Community At UNN
-            </h1>
-
-            {/* Sub-headline / Description */}
-            <p className="text-stone-600 dark:text-slate-300 text-sm sm:text-base leading-relaxed font-normal">
-              Welcoming all students to their spiritual home at <strong className="text-stone-800 dark:text-white font-semibold">{SITE_INFO.chaplaincy}</strong>.
-              Growing together in prayer, academic excellence, leadership, and lifelong Catholic brotherhood.
-            </p>
-
-            {/* Action Buttons Row */}
-            <div className="flex flex-wrap items-center justify-center gap-4 pt-2">
-              <button
-                onClick={() => onNavigate('spiritual')}
-                className="flex items-center gap-2 bg-[#4D2EAB] hover:bg-[#3B2285] dark:bg-indigo-600 dark:hover:bg-indigo-500 text-white font-bold text-sm sm:text-base px-7 py-3.5 rounded-full shadow-lg hover:shadow-indigo-500/25 transition-all duration-200 transform hover:-translate-y-0.5 active:scale-95 cursor-pointer"
-              >
-                <span>Join NFCS & View Mass Times</span>
-                <ArrowUpRight className="w-4 h-4" />
-              </button>
-
-              <button
-                onClick={() => onNavigate('about')}
-                className="flex items-center gap-2 bg-[#4D2EAB]/10 dark:bg-slate-900/90 hover:bg-[#4D2EAB]/20 dark:hover:bg-slate-800 text-[#4D2EAB] dark:text-indigo-300 font-bold text-sm sm:text-base px-6 py-3.5 rounded-full border border-[#4D2EAB]/30 dark:border-slate-700/80 shadow-xs transition-all duration-200 active:scale-95 cursor-pointer"
-              >
-                <BookOpen className="w-4 h-4 text-[#4D2EAB] dark:text-indigo-400" />
-                <span>Explore Our History</span>
-              </button>
-            </div>
-
-          </div>
-
-          {/* Right Angled Media Frame */}
-          <div className="hidden lg:block lg:col-span-3 transform rotate-6 hover:rotate-0 transition-all duration-500 hover:scale-105">
-            <div className="bg-[#4D2EAB]/5 dark:bg-slate-900/80 p-3 rounded-2xl shadow-2xl border border-[#4D2EAB]/20 dark:border-slate-800/80 backdrop-blur-md">
-              <div className="relative aspect-4/5 rounded-xl bg-stone-200 dark:bg-slate-800 overflow-hidden flex flex-col items-center justify-center p-4 group">
                 <img
-                  src="https://images.unsplash.com/photo-1523240795612-9a054b0db644?auto=format&fit=crop&q=80&w=600"
-                  alt="First Year Forum Students Orientation"
-                  className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                  className="inline-block h-8 w-8 rounded-full ring-2 ring-white/40 object-cover"
+                  src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=120"
+                  alt="Member"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/20 to-transparent"></div>
-                <div className="relative z-10 text-white mt-auto text-center p-2">
-                  <span className="text-[10px] uppercase tracking-wider font-bold bg-amber-600 px-2.5 py-1 rounded-full shadow-sm">
-                    Student Life
-                  </span>
-                  <p className="text-xs font-semibold mt-1.5 text-white/95">First Year Forum Orientation</p>
-                </div>
+                <img
+                  className="inline-block h-8 w-8 rounded-full ring-2 ring-white/40 object-cover"
+                  src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&q=80&w=120"
+                  alt="Member"
+                />
               </div>
+              <span className="text-xs text-slate-300 font-light flex items-center gap-1">
+                <Users className="w-3.5 h-3.5 text-amber-400 inline" />
+                5,000+ UNN Catholic Students
+              </span>
             </div>
-          </div>
+          </motion.div>
 
         </div>
       </div>
