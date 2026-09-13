@@ -1,11 +1,11 @@
 /* Federation Week Raffle & Event Registration — Design Tokens & CSS Utilities */
 
-html {
+html:has(.app-page),
+html:has(.raffle-page) {
   width: 100% !important;
   max-width: 100% !important;
   overflow-x: hidden !important;
   overflow-x: clip !important;
-  overflow-y: auto !important;
 }
 
 body {
@@ -92,36 +92,46 @@ body {
   right: -38px;
 }
 
-/* Custom sleek root window scrollbar styled with yellow hex #FBE202 */
-html::-webkit-scrollbar {
+/* Custom sleek scrollbar styled with yellow hex #FBE202 for raffle pages */
+html:has(.app-page)::-webkit-scrollbar,
+html:has(.raffle-page)::-webkit-scrollbar,
+.app-page::-webkit-scrollbar,
+.raffle-page::-webkit-scrollbar {
   width: 9px;
   height: 9px;
 }
-html::-webkit-scrollbar-track {
+html:has(.app-page)::-webkit-scrollbar-track,
+html:has(.raffle-page)::-webkit-scrollbar-track,
+.app-page::-webkit-scrollbar-track,
+.raffle-page::-webkit-scrollbar-track {
   background: #0B0B0F;
 }
-html::-webkit-scrollbar-thumb {
+html:has(.app-page)::-webkit-scrollbar-thumb,
+html:has(.raffle-page)::-webkit-scrollbar-thumb,
+.app-page::-webkit-scrollbar-thumb,
+.raffle-page::-webkit-scrollbar-thumb {
   background: #FBE202;
   border-radius: 9999px;
   border: 2px solid #0B0B0F;
 }
-html::-webkit-scrollbar-thumb:hover {
+html:has(.app-page)::-webkit-scrollbar-thumb:hover,
+html:has(.raffle-page)::-webkit-scrollbar-thumb:hover,
+.app-page::-webkit-scrollbar-thumb:hover,
+.raffle-page::-webkit-scrollbar-thumb:hover {
   background: #FDE047;
 }
 
 /* Ensure no secondary scrollbars are ever rendered on inner containers */
-body::-webkit-scrollbar,
-#root::-webkit-scrollbar,
 .raffle-page::-webkit-scrollbar,
-.app-page::-webkit-scrollbar,
-section::-webkit-scrollbar {
+.app-page::-webkit-scrollbar {
   display: none !important;
   width: 0 !important;
   height: 0 !important;
 }
 
-/* Firefox standard scrollbar in yellow for root window */
-html {
+/* Firefox standard scrollbar in yellow for raffle pages */
+html:has(.app-page),
+html:has(.raffle-page) {
   scrollbar-width: thin;
   scrollbar-color: #FBE202 #0B0B0F;
 }

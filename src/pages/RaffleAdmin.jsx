@@ -1,7 +1,6 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '../lib/supabaseClient';
-import '../styles/raffle.css';
 import {
   Ticket,
   Coins,
@@ -48,6 +47,19 @@ export default function RaffleAdmin() {
   const [copiedTicket, setCopiedTicket] = useState('');
   const [unlocking, setUnlocking] = useState(false);
   const [unlockError, setUnlockError] = useState('');
+  const [expandedTicketOrders, setExpandedTicketOrders] = useState(new Set());
+
+  const toggleExpandTickets = (orderId) => {
+    setExpandedTicketOrders((prev) => {
+      const next = new Set(prev);
+      if (next.has(orderId)) {
+        next.delete(orderId);
+      } else {
+        next.add(orderId);
+      }
+      return next;
+    });
+  };
 
   // Walk-in Registration Modal State
   const [isWalkInModalOpen, setIsWalkInModalOpen] = useState(false);
@@ -644,7 +656,7 @@ export default function RaffleAdmin() {
           </div>
 
           {/* Table View */}
-          <div className="overflow-x-auto">
+          <div className="overflow-x-auto overflow-y-hidden admin-table-scroll">
             <table className="w-full text-left border-collapse">
               <thead>
                 <tr className="bg-stone-100/70 border-b border-stone-200 text-[11px] font-black uppercase tracking-wider text-stone-500">
@@ -685,8 +697,8 @@ export default function RaffleAdmin() {
                             <span
                               className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider border ${
                                 o.channel === 'online'
-                                  ? 'bg-emerald-50 text-emerald-800 border-emerald-200'
-                                  : 'bg-amber-50 text-amber-800 border-amber-200'
+                                   ? 'bg-emerald-50 text-emerald-800 border-emerald-200'
+                                   : 'bg-amber-50 text-amber-800 border-amber-200'
                               }`}
                             >
                               {o.channel === 'online' ? (
@@ -716,23 +728,45 @@ export default function RaffleAdmin() {
                           ₦{Number(o.total_amount).toLocaleString()}
                         </td>
                         <td className="px-5 py-4">
-                          <div className="flex flex-wrap gap-1 max-w-md max-h-24 overflow-y-auto py-1">
-                            {(o.raffle_tickets || []).map((t) => (
-                              <button
-                                key={t.ticket_number}
-                                onClick={() => handleCopyTicket(t.ticket_number)}
-                                title="Click to copy ticket number"
-                                className="inline-flex items-center gap-1 shrink-0 bg-stone-100 hover:bg-[#166C16]/10 text-stone-800 hover:text-[#166C16] border border-stone-200 text-[10px] font-black px-2 py-0.5 rounded-md font-mono tracking-wider transition-all cursor-pointer"
-                              >
-                                <span>{t.ticket_number}</span>
-                                {copiedTicket === t.ticket_number ? (
-                                  <Check className="w-2.5 h-2.5 text-emerald-600" />
-                                ) : (
-                                  <Copy className="w-2.5 h-2.5 opacity-35" />
+                          {(() => {
+                            const tickets = o.raffle_tickets || [];
+                            if (tickets.length === 0) {
+                              return <span className="text-stone-400 text-xs italic">None</span>;
+                            }
+                            const isExpanded = expandedTicketOrders.has(o.id);
+                            const visibleTickets = isExpanded ? tickets : tickets.slice(0, 4);
+                            const remaining = tickets.length - 4;
+
+                            return (
+                              <div className="flex flex-wrap items-center gap-1 max-w-md py-1">
+                                {visibleTickets.map((t) => (
+                                  <button
+                                    key={t.ticket_number}
+                                    onClick={() => handleCopyTicket(t.ticket_number)}
+                                    title="Click to copy ticket number"
+                                    className="inline-flex items-center gap-1 shrink-0 bg-stone-100 hover:bg-[#166C16]/10 text-stone-800 hover:text-[#166C16] border border-stone-200 text-[10px] font-black px-2 py-0.5 rounded-md font-mono tracking-wider transition-all cursor-pointer"
+                                  >
+                                    <span>{t.ticket_number}</span>
+                                    {copiedTicket === t.ticket_number ? (
+                                      <Check className="w-2.5 h-2.5 text-emerald-600" />
+                                    ) : (
+                                      <Copy className="w-2.5 h-2.5 opacity-35" />
+                                    )}
+                                  </button>
+                                ))}
+
+                                {remaining > 0 && (
+                                  <button
+                                    onClick={() => toggleExpandTickets(o.id)}
+                                    className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-md bg-stone-200/80 hover:bg-stone-300 text-stone-700 transition-colors cursor-pointer shrink-0"
+                                    title={isExpanded ? 'Collapse tickets' : `View all ${tickets.length} tickets`}
+                                  >
+                                    {isExpanded ? 'Show less' : `+${remaining} more`}
+                                  </button>
                                 )}
-                              </button>
-                            ))}
-                          </div>
+                              </div>
+                            );
+                          })()}
                         </td>
                         <td className="px-5 py-4 whitespace-nowrap text-right">
                           {o.raffle_tickets && o.raffle_tickets.length > 0 && (
@@ -829,8 +863,8 @@ export default function RaffleAdmin() {
                 </button>
               </div>
 
-              {/* Modal Body with visible styled scrollbar */}
-              <div className="p-5 sm:p-6 overflow-y-auto max-h-[70vh] sm:max-h-[500px] space-y-5 walkin-form-scroll pr-3 sm:pr-4">
+              {/* Modal Body */}
+              <div className="p-5 sm:p-6 overflow-y-auto max-h-[calc(88vh-80px)] space-y-5 admin-modal-scroll pr-3 sm:pr-4">
                 {/* Result Card (When tickets have been successfully issued) */}
                 {manualResult ? (
                   <motion.div
@@ -864,7 +898,7 @@ export default function RaffleAdmin() {
                     </div>
 
                     {/* Issued Ticket Chips */}
-                    <div className="p-3 bg-white rounded-xl border border-emerald-200 flex flex-wrap gap-1.5 justify-center max-h-36 overflow-y-auto">
+                    <div className="p-3 bg-white rounded-xl border border-emerald-200 flex flex-wrap gap-1.5 justify-center">
                       {(manualResult.tickets || []).map((t) => (
                         <span
                           key={t}

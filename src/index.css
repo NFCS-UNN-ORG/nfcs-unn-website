@@ -61,6 +61,43 @@
   background: #4D2EAB;
 }
 
+/* Sleek Admin Dashboard Scrollbar Utilities */
+.admin-table-scroll::-webkit-scrollbar {
+  height: 6px;
+  width: 6px;
+}
+.admin-table-scroll::-webkit-scrollbar-track {
+  background: #f8fafc;
+  border-radius: 9999px;
+}
+.admin-table-scroll::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 9999px;
+}
+.admin-table-scroll::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+.admin-modal-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: #166C16 #f1f5f9;
+}
+.admin-modal-scroll::-webkit-scrollbar {
+  width: 6px;
+}
+.admin-modal-scroll::-webkit-scrollbar-track {
+  background: #f1f5f9;
+  border-radius: 9999px;
+}
+.admin-modal-scroll::-webkit-scrollbar-thumb {
+  background: #166C16;
+  border-radius: 9999px;
+}
+.admin-modal-scroll::-webkit-scrollbar-thumb:hover {
+  background: #175319;
+}
+
+
 /* Infinite Marquee Animation for Top Announcement Banner */
 @keyframes marquee {
   0% { transform: translateX(0%); }
