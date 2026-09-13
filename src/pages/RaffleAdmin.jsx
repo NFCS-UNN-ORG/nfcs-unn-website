@@ -46,7 +46,6 @@ export default function RaffleAdmin() {
   const [search, setSearch] = useState('');
   const [channelFilter, setChannelFilter] = useState('all'); // 'all' | 'online' | 'walk-in'
   const [isRefreshing, setIsRefreshing] = useState(false);
-  const [isSyncingPaystack, setIsSyncingPaystack] = useState(false);
   const [syncFeedback, setSyncFeedback] = useState(null);
   const [copiedTicket, setCopiedTicket] = useState('');
   const [unlocking, setUnlocking] = useState(false);
@@ -149,39 +148,40 @@ export default function RaffleAdmin() {
   }
 
   async function handleManualRefresh() {
+    if (isRefreshing) return;
     setIsRefreshing(true);
-    await Promise.all([refreshSummary(), refreshOrders(secret)]);
-    setTimeout(() => setIsRefreshing(false), 450);
-  }
-
-  async function handleSyncPaystack() {
-    if (!secret || isSyncingPaystack) return;
-    setIsSyncingPaystack(true);
-    setSyncFeedback(null);
     try {
-      const res = await fetch('/api/admin-sync-paystack', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-admin-secret': secret,
-        },
-      });
-      const data = await res.json();
-      if (!res.ok) {
-        setSyncFeedback({ type: 'error', message: data.error || 'Failed to sync with Paystack.' });
-      } else {
-        setSyncFeedback({
-          type: 'success',
-          message: data.message,
-        });
-        await Promise.all([refreshSummary(), refreshOrders(secret)]);
+      // 1. Check & sync any missing transactions from Paystack in background
+      if (secret) {
+        try {
+          const syncRes = await fetch('/api/admin-sync-paystack', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'x-admin-secret': secret,
+            },
+          });
+          if (syncRes.ok) {
+            const syncData = await syncRes.json();
+            if (syncData.syncedCount > 0) {
+              setSyncFeedback({
+                type: 'success',
+                message: syncData.message,
+              });
+              setTimeout(() => setSyncFeedback(null), 6000);
+            }
+          }
+        } catch (syncErr) {
+          console.warn('Paystack background sync notice:', syncErr);
+        }
       }
+
+      // 2. Fetch fresh database summary & orders
+      await Promise.all([refreshSummary(), refreshOrders(secret)]);
     } catch (err) {
-      console.error('Paystack sync error:', err);
-      setSyncFeedback({ type: 'error', message: 'Network error while syncing with Paystack.' });
+      console.error('Refresh error:', err);
     } finally {
-      setIsSyncingPaystack(false);
-      setTimeout(() => setSyncFeedback(null), 6000);
+      setTimeout(() => setIsRefreshing(false), 500);
     }
   }
 
@@ -562,38 +562,24 @@ export default function RaffleAdmin() {
                 <h1 className="text-lg sm:text-xl font-black text-stone-900 leading-tight">
                   Federation Week Raffle
                 </h1>
-                <span className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-800 bg-emerald-100 px-2.5 py-0.5 rounded-full border border-emerald-300">
-                  <span className="size-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                  Live Sync
-                </span>
               </div>
               <p className="text-xs text-stone-500 font-medium">
-                Admin Control Center · St. Peter's Chaplaincy UNN
+                Admin
               </p>
             </div>
           </div>
 
           {/* Action Toolbar */}
           <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
-            {/* Live Refresh Button */}
+            {/* Unified Refresh & Sync Button */}
             <button
               onClick={handleManualRefresh}
               disabled={isRefreshing}
-              className="p-2.5 text-stone-600 hover:text-stone-900 bg-stone-100 hover:bg-stone-200 rounded-xl transition-all active:scale-95 cursor-pointer disabled:opacity-50"
-              title="Refresh live data from database"
+              className="flex items-center gap-1.5 p-2.5 sm:px-3.5 sm:py-2.5 text-stone-700 hover:text-stone-900 bg-stone-100 hover:bg-stone-200 border border-stone-200/80 rounded-xl font-bold text-xs transition-all active:scale-95 cursor-pointer disabled:opacity-50 shadow-2xs"
+              title="Refresh live orders and sync with Paystack"
             >
-              <RefreshCw className={`w-4 h-4 ${isRefreshing ? 'animate-spin text-[#166C16]' : ''}`} />
-            </button>
-
-            {/* Sync with Paystack Button */}
-            <button
-              onClick={handleSyncPaystack}
-              disabled={isSyncingPaystack || isRefreshing}
-              className="flex items-center gap-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-300 font-bold text-xs px-3.5 py-2.5 rounded-xl shadow-xs transition-all active:scale-95 cursor-pointer disabled:opacity-50"
-              title="Reconcile live transactions directly with Paystack API"
-            >
-              <RefreshCw className={`w-3.5 h-3.5 ${isSyncingPaystack ? 'animate-spin text-emerald-600' : 'text-emerald-700'}`} />
-              <span>{isSyncingPaystack ? 'Syncing Paystack…' : 'Sync Paystack'}</span>
+              <RefreshCw className={`w-3.5 h-3.5 ${isRefreshing ? 'animate-spin text-[#166C16]' : 'text-stone-500'}`} />
+              <span className="hidden sm:inline">{isRefreshing ? 'Syncing…' : 'Refresh'}</span>
             </button>
 
             {/* Primary Action: Open Walk-in Modal */}
@@ -606,7 +592,7 @@ export default function RaffleAdmin() {
               className="flex items-center gap-2 bg-[#166C16] hover:bg-[#175319] text-white font-black text-xs px-4 py-2.5 rounded-xl shadow-md hover:shadow-lg transition-all active:scale-95 cursor-pointer border border-[#FBE202]/40"
             >
               <Plus className="w-4 h-4 text-[#FBE202]" />
-              <span>Register Walk-in</span>
+              <span>Register</span>
             </button>
 
             {/* Print All Drum Slips */}
