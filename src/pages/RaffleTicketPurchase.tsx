@@ -22,7 +22,11 @@ import {
   ShieldCheck,
   ArrowDown,
   Loader2,
+  Gift,
+  X,
+  Share2,
 } from 'lucide-react';
+import { formatPhoneDisplay, normalizeNigerianPhone } from '../lib/utils';
 
 // Lazy-load the 3D Canvas
 const ScrollHero3D = lazy(() => import('../components/registration/ScrollHero3D'));
@@ -69,6 +73,8 @@ export default function RaffleTicketPurchase() {
   const [gender, setGender] = useState('');
   const [department, setDepartment] = useState('');
   const [quantity, setQuantity] = useState<number>(1);
+  const [referredBy, setReferredBy] = useState<string>('');
+  const [copiedReferral, setCopiedReferral] = useState(false);
 
   // Status & App State
   const [error, setError] = useState('');
@@ -80,6 +86,65 @@ export default function RaffleTicketPurchase() {
   const [result, setResult] = useState<any>(null);
   const [isGeneratingTickets, setIsGeneratingTickets] = useState(false);
   const isVerifyingRef = useRef(false);
+
+  // Existing Buyer Referral Lookup Modal State
+  const [isReferralLookupOpen, setIsReferralLookupOpen] = useState(false);
+  const [lookupPhone, setLookupPhone] = useState('');
+  const [lookupLoading, setLookupLoading] = useState(false);
+  const [lookupError, setLookupError] = useState('');
+  const [lookupResult, setLookupResult] = useState<any>(null);
+  const [copiedLookupLink, setCopiedLookupLink] = useState(false);
+
+  const handleReferralLookup = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const phoneInput = normalizeNigerianPhone(lookupPhone.trim()) || lookupPhone.trim();
+    if (!phoneInput || phoneInput.length < 8) {
+      setLookupError('Please enter a valid phone number');
+      return;
+    }
+    setLookupLoading(true);
+    setLookupError('');
+    setLookupResult(null);
+
+    try {
+      const res = await fetch(`/api/referral-lookup?phone=${encodeURIComponent(phoneInput)}`);
+      const data = await res.json();
+      if (!res.ok) {
+        setLookupError(data.error || 'Failed to check referral status');
+      } else if (!data.found) {
+        setLookupError(data.message || 'No ticket purchase found for this phone number.');
+      } else {
+        setLookupResult(data);
+      }
+    } catch (err) {
+      setLookupError('Network error. Please check your connection and try again.');
+    } finally {
+      setLookupLoading(false);
+    }
+  };
+
+  // Parse referral parameter from URL (e.g. ?ref=08012345678 or ?ref=+2348012345678)
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      const refCode = params.get('ref') || params.get('referral');
+      if (refCode) {
+        const clean = normalizeNigerianPhone(refCode.trim()) || refCode.trim();
+        setReferredBy(clean);
+        try {
+          localStorage.setItem('nfcs_raffle_ref', clean);
+        } catch {}
+      } else {
+        try {
+          const stored = localStorage.getItem('nfcs_raffle_ref');
+          if (stored) {
+            const cleanStored = normalizeNigerianPhone(stored) || stored;
+            setReferredBy(cleanStored);
+          }
+        } catch {}
+      }
+    }
+  }, []);
   const formDataRef = useRef({
     name: '',
     phone: '',
@@ -151,7 +216,6 @@ export default function RaffleTicketPurchase() {
     let orderParam =
       params.get('order') ||
       params.get('id') ||
-      params.get('ref') ||
       params.get('reference') ||
       params.get('trxref');
 
@@ -234,6 +298,13 @@ export default function RaffleTicketPurchase() {
       } catch {}
     }
 
+    let activeRef = referredBy;
+    if (!activeRef && typeof window !== 'undefined') {
+      try {
+        activeRef = localStorage.getItem('nfcs_raffle_ref') || '';
+      } catch {}
+    }
+
     try {
       await loadPaystackScript();
 
@@ -249,6 +320,7 @@ export default function RaffleTicketPurchase() {
           gender: buyerGender,
           department: buyerDept,
           quantity: qtyNumber,
+          referred_by: activeRef ? (normalizeNigerianPhone(activeRef) || activeRef) : null,
         },
         callback: (response: any) => {
           isVerifyingRef.current = true;
@@ -290,6 +362,9 @@ export default function RaffleTicketPurchase() {
     const buyerDept = buyerData?.department || department;
     const buyerGender = buyerData?.gender || gender;
 
+    const canonicalBuyerPhone = normalizeNigerianPhone(buyerPhone) || buyerPhone;
+    const canonicalActiveRef = activeRef ? (normalizeNigerianPhone(activeRef) || activeRef) : null;
+
     try {
       const res = await fetch('/api/verify-paystack', {
         method: 'POST',
@@ -297,14 +372,15 @@ export default function RaffleTicketPurchase() {
         body: JSON.stringify({
           reference,
           buyer_name: buyerName,
-          buyer_phone: buyerPhone,
+          buyer_phone: canonicalBuyerPhone,
           buyer_email: buyerEmail || null,
           name: buyerName,
-          phone: buyerPhone,
+          phone: canonicalBuyerPhone,
           email: buyerEmail || null,
           department: buyerDept || null,
           gender: buyerGender || null,
           quantity: qtyNumber,
+          referred_by: canonicalActiveRef || null,
         }),
       });
 
@@ -584,6 +660,73 @@ export default function RaffleTicketPurchase() {
                   </p>
                 </div>
 
+                {/* Viral Referral Milestone Card */}
+                {(() => {
+                  const promoterPhone = normalizeNigerianPhone(result.buyer_phone || phone) || (result.buyer_phone || phone);
+                  const referralLink = typeof window !== 'undefined'
+                    ? `${window.location.origin}/raffle-draw?ref=${encodeURIComponent(promoterPhone)}`
+                    : `https://nfcsunn.org/raffle-draw?ref=${encodeURIComponent(promoterPhone)}`;
+                  const shareText = `🎟️ Grab your Federation Week Raffle Ticket for ₦200 and stand a chance to win:\n🥇 1st: 5000mAh Powerbank + Airbuds\n🥈 2nd: 3kg Gas + 10kg Rice\n🥉 3rd: Pressing Iron\n\nBuy with my link here: ${referralLink}`;
+                  const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(shareText)}`;
+
+                  return (
+                    <div className="p-5 sm:p-6 rounded-2xl bg-gradient-to-br from-[#166C16]/60 via-[#175319]/80 to-[#0A2610] border border-[#FBE202]/40 shadow-xl space-y-3.5 text-left relative overflow-hidden">
+                      <div className="flex items-center justify-between">
+                        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#FBE202]/20 border border-[#FBE202]/50 text-[#FBE202] text-xs font-black uppercase tracking-wider">
+                          <span>🎁 Refer 10 Friends → Get 1 FREE Ticket</span>
+                        </div>
+                      </div>
+
+                      <div>
+                        <h4 className="text-base font-black text-white leading-snug">
+                          Want more chances to win without paying?
+                        </h4>
+                        <p className="text-xs text-white/80 font-medium mt-1 leading-relaxed">
+                          Share your link with course mates & hostel friends. For every <strong>10 tickets</strong> bought through your link, you'll automatically receive an official <strong>FREE entry</strong> into the live draw!
+                        </p>
+                      </div>
+
+                      {/* Referral Link Box */}
+                      <div className="flex items-center gap-2 bg-black/40 border border-white/15 rounded-xl p-2.5">
+                        <span className="text-xs text-[#FBE202] font-mono truncate flex-1 select-all">
+                          {referralLink}
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            if (navigator.clipboard) {
+                              navigator.clipboard.writeText(referralLink);
+                              setCopiedReferral(true);
+                              setTimeout(() => setCopiedReferral(false), 2500);
+                            }
+                          }}
+                          className="shrink-0 px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-white text-xs font-bold transition-all flex items-center gap-1 cursor-pointer"
+                        >
+                          {copiedReferral ? (
+                            <>
+                              <CheckCircle2 className="size-3.5 text-emerald-400" />
+                              <span className="text-emerald-400">Copied!</span>
+                            </>
+                          ) : (
+                            <span>Copy Link</span>
+                          )}
+                        </button>
+                      </div>
+
+                      {/* WhatsApp Share Button */}
+                      <a
+                        href={whatsappUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="w-full py-3.5 px-4 rounded-xl bg-[#25D366] hover:bg-[#20bd5a] text-white font-black text-sm transition-all flex items-center justify-center gap-2 shadow-lg hover:shadow-xl active:scale-98 cursor-pointer"
+                      >
+                        <span className="text-lg">💬</span>
+                        <span>Share on WhatsApp (Status & Groups)</span>
+                      </a>
+                    </div>
+                  );
+                })()}
+
                 {/* Reset / Buy More */}
                 <button
                   type="button"
@@ -687,6 +830,23 @@ export default function RaffleTicketPurchase() {
                           </span>
                           <ChevronRight className="w-4 h-4 ml-1 text-[#FBE202]" />
                         </motion.button>
+
+                        {/* Referral Link & Progress Retrieval trigger button */}
+                        <div className="pt-2 text-center">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setIsReferralLookupOpen(true);
+                              setLookupError('');
+                              setLookupResult(null);
+                            }}
+                            className="inline-flex items-center gap-1.5 text-xs font-bold text-[#FBE202]/90 hover:text-white transition-colors py-2 px-3 rounded-lg hover:bg-white/5 cursor-pointer"
+                          >
+                            <Gift className="size-4 text-[#FBE202]" />
+                            <span>Already bought a ticket? Retrieve your referral link & stats</span>
+                            <ChevronRight className="size-3.5 text-[#FBE202]" />
+                          </button>
+                        </div>
                       </motion.section>
                     ) : (
                       /* SCREEN B: Registration Form with Pinned Ticket Recap */
@@ -762,6 +922,8 @@ export default function RaffleTicketPurchase() {
                             loading={loading}
                             onSubmit={handlePay}
                             onFocusChange={setIsFormInteracting}
+                            referredBy={referredBy}
+                            setReferredBy={setReferredBy}
                           />
 
                           {error && (
@@ -820,6 +982,193 @@ export default function RaffleTicketPurchase() {
                 <ShieldCheck className="size-3.5 text-[#22C55E]" />
                 <span>Verified Paystack Transaction</span>
               </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Existing Buyer Referral Retrieval & Progress Modal */}
+      <AnimatePresence>
+        {isReferralLookupOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[99999] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4"
+            onClick={(e) => {
+              if (e.target === e.currentTarget) setIsReferralLookupOpen(false);
+            }}
+          >
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0, y: 10 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.95, opacity: 0, y: 10 }}
+              className="w-full max-w-md bg-[#0D2E14] border border-white/20 rounded-2xl p-6 shadow-2xl relative overflow-hidden"
+            >
+              {/* Close Button */}
+              <button
+                type="button"
+                onClick={() => setIsReferralLookupOpen(false)}
+                className="absolute top-4 right-4 p-1.5 rounded-lg text-white/60 hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
+              >
+                <X className="size-5" />
+              </button>
+
+              <div className="flex items-center gap-3 mb-4">
+                <div className="size-10 rounded-xl bg-[#FBE202]/10 border border-[#FBE202]/30 flex items-center justify-center text-[#FBE202]">
+                  <Gift className="size-5" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-black text-white">Referral Tracker</h3>
+                  <p className="text-xs text-white/60">Look up your link & free ticket progress</p>
+                </div>
+              </div>
+
+              {!lookupResult ? (
+                <form onSubmit={handleReferralLookup} className="space-y-4">
+                  <div>
+                    <label className="block text-xs font-bold text-white/70 uppercase tracking-wider mb-1.5">
+                      Your Registered Phone Number
+                    </label>
+                    <input
+                      type="tel"
+                      placeholder="e.g. 08012345678"
+                      value={lookupPhone}
+                      onChange={(e) => setLookupPhone(e.target.value)}
+                      className="w-full px-4 py-3 rounded-xl bg-black/40 border border-white/20 text-white placeholder-white/40 text-sm font-medium focus:outline-none focus:border-[#FBE202] transition-colors"
+                      required
+                    />
+                    <p className="text-[11px] text-white/50 mt-1">
+                      Enter the phone number you used when purchasing your ticket.
+                    </p>
+                  </div>
+
+                  {lookupError && (
+                    <div className="p-3 rounded-xl bg-rose-500/20 border border-rose-500/40 text-rose-300 text-xs font-medium">
+                      ⚠️ {lookupError}
+                    </div>
+                  )}
+
+                  <button
+                    type="submit"
+                    disabled={lookupLoading}
+                    className="w-full py-3 px-4 rounded-xl bg-[#166C16] hover:bg-[#175319] text-white font-bold text-sm transition-all shadow-lg border border-[#FBE202]/30 flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+                  >
+                    {lookupLoading ? (
+                      <>
+                        <Loader2 className="size-4 animate-spin text-[#FBE202]" />
+                        <span>Verifying phone number…</span>
+                      </>
+                    ) : (
+                      <>
+                        <span>Retrieve My Referral Stats</span>
+                        <ChevronRight className="size-4 text-[#FBE202]" />
+                      </>
+                    )}
+                  </button>
+                </form>
+              ) : (
+                (() => {
+                  const promoterPhone = normalizeNigerianPhone(lookupResult?.buyer_phone || lookupResult?.phone || lookupPhone) || lookupPhone;
+                  const referralLink = typeof window !== 'undefined'
+                    ? `${window.location.origin}/raffle-draw?ref=${encodeURIComponent(promoterPhone)}`
+                    : `https://nfcsunn.org/raffle-draw?ref=${encodeURIComponent(promoterPhone)}`;
+                  const progressCount = Number(
+                    lookupResult?.progress_in_current_cycle ??
+                    lookupResult?.progress_in_current_milestone ??
+                    (lookupResult?.total_referred_tickets ? lookupResult.total_referred_tickets % 10 : 0)
+                  );
+                  const totalReferred = Number(lookupResult?.total_referred_tickets || 0);
+                  const bonusAwarded = Number(lookupResult?.bonus_tickets_awarded || 0);
+
+                  return (
+                    <div className="space-y-5">
+                      {/* Buyer summary */}
+                      <div className="p-3.5 rounded-xl bg-white/5 border border-white/10">
+                        <p className="text-xs text-white/60">Welcome back,</p>
+                        <p className="text-base font-bold text-white">{lookupResult.buyer_name}</p>
+                        <p className="text-xs text-[#FBE202] font-mono mt-0.5">{formatPhoneDisplay(promoterPhone)}</p>
+                      </div>
+
+                      {/* Progress Milestone */}
+                      <div className="p-4 rounded-xl bg-[#166C16]/20 border border-[#FBE202]/30 space-y-3">
+                        <div className="flex items-center justify-between">
+                          <span className="text-xs font-bold text-white/80 uppercase tracking-wider">
+                            Progress to Next Free Ticket
+                          </span>
+                          <span className="text-xs font-black text-[#FBE202]">
+                            {progressCount} / 10 Tickets
+                          </span>
+                        </div>
+
+                        {/* Progress Bar */}
+                        <div className="w-full h-2.5 bg-black/40 rounded-full overflow-hidden border border-white/10">
+                          <div
+                            className="h-full bg-gradient-to-r from-[#FBE202] to-emerald-400 rounded-full transition-all duration-500"
+                            style={{ width: `${Math.min(100, (progressCount / 10) * 100)}%` }}
+                          />
+                        </div>
+
+                        <div className="flex items-center justify-between text-[11px] text-white/70 pt-1">
+                          <span>Total Referred: <strong className="text-white">{totalReferred}</strong></span>
+                          <span>Free Tickets Won: <strong className="text-[#FBE202]">{bonusAwarded}</strong></span>
+                        </div>
+                      </div>
+
+                      {/* Referral Link Box */}
+                      <div>
+                        <label className="block text-xs font-bold text-white/70 uppercase tracking-wider mb-1.5">
+                          Your Personal Referral Link
+                        </label>
+                        <div className="flex items-center gap-2">
+                          <input
+                            type="text"
+                            readOnly
+                            value={referralLink}
+                            className="flex-1 px-3.5 py-2.5 rounded-xl bg-black/40 border border-white/20 text-xs font-mono text-white select-all focus:outline-none"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => {
+                              navigator.clipboard.writeText(referralLink);
+                              setCopiedLookupLink(true);
+                              setTimeout(() => setCopiedLookupLink(false), 2500);
+                            }}
+                            className="px-3.5 py-2.5 rounded-xl bg-[#FBE202] text-[#0A1E0D] font-bold text-xs hover:bg-[#FBE202]/90 transition-colors flex items-center gap-1.5 shrink-0 cursor-pointer"
+                          >
+                            {copiedLookupLink ? 'Copied!' : 'Copy'}
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* 1-Tap Share to WhatsApp */}
+                      <a
+                        href={`https://wa.me/?text=${encodeURIComponent(
+                          `🎟️ Grab your Federation Week Raffle Ticket for ₦200 and stand a chance to win:\n🥇 1st: 5000mAh Powerbank + Airbuds\n🥈 2nd: 3kg Gas + 10kg Rice\n🥉 3rd: Pressing Iron\n\nBuy with my link here: ${referralLink}`
+                        )}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="w-full py-3 px-4 rounded-xl bg-[#25D366] hover:bg-[#20BA5A] text-white font-bold text-sm transition-all flex items-center justify-center gap-2 shadow-lg cursor-pointer"
+                      >
+                        <Share2 className="size-4" />
+                        <span>Share on WhatsApp Status / Group</span>
+                      </a>
+
+                      {/* Check another number */}
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setLookupResult(null);
+                          setLookupPhone('');
+                        }}
+                        className="w-full text-center text-xs text-white/50 hover:text-white/80 transition-colors py-1 cursor-pointer"
+                      >
+                        Check a different phone number
+                      </button>
+                    </div>
+                  );
+                })()
+              )}
             </motion.div>
           </motion.div>
         )}

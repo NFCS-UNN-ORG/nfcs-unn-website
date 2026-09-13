@@ -2,6 +2,7 @@ import React, { useState, useEffect, memo } from 'react';
 import { motion } from 'framer-motion';
 import { ChevronDown, ShieldCheck, ArrowRight, Loader2 } from 'lucide-react';
 import { AnimatedPrice } from './AnimatedPrice';
+import { normalizeNigerianPhone } from '../../lib/utils';
 
 interface RegistrationFormProps {
   name: string;
@@ -25,6 +26,8 @@ interface RegistrationFormProps {
     department: string;
   }) => void;
   onFocusChange?: (isFocused: boolean) => void;
+  referredBy?: string;
+  setReferredBy?: (v: string) => void;
 }
 
 export const RegistrationForm: React.FC<RegistrationFormProps> = memo(({
@@ -43,6 +46,8 @@ export const RegistrationForm: React.FC<RegistrationFormProps> = memo(({
   loading,
   onSubmit,
   onFocusChange,
+  referredBy,
+  setReferredBy,
 }) => {
   // Local state isolates typing from parent page re-renders (zero keystroke lag)
   const [localName, setLocalName] = useState(name);
@@ -86,9 +91,11 @@ export const RegistrationForm: React.FC<RegistrationFormProps> = memo(({
     }
     setError('');
 
+    const canonicalPhone = normalizeNigerianPhone(localPhone.trim()) || localPhone.trim();
+
     const formData = {
       name: localName.trim(),
-      phone: localPhone.trim(),
+      phone: canonicalPhone,
       email: localEmail.trim(),
       gender: localGender.trim(),
       department: localDepartment.trim(),
@@ -247,6 +254,56 @@ export const RegistrationForm: React.FC<RegistrationFormProps> = memo(({
               placeholder="e.g. Pharmacy / 400L"
               className="w-full underline-input text-base text-white placeholder:text-white/25 py-2.5"
             />
+          </div>
+
+          {/* Referral Code / Link Credit (Optional) */}
+          <div className="pt-1">
+            {referredBy ? (
+              <div className="flex items-center justify-between p-2.5 rounded-xl bg-[#FBE202]/10 border border-[#FBE202]/30 text-xs text-[#FBE202]">
+                <div className="flex items-center gap-1.5 truncate">
+                  <span>✨</span>
+                  <span>Referred by: <strong className="text-white font-mono">{referredBy}</strong></span>
+                </div>
+                {setReferredBy && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setReferredBy('');
+                      try { localStorage.removeItem('nfcs_raffle_ref'); } catch {}
+                    }}
+                    className="text-white/50 hover:text-white text-[10px] underline ml-2 cursor-pointer shrink-0"
+                  >
+                    Change
+                  </button>
+                )}
+              </div>
+            ) : (
+              <div>
+                <label
+                  htmlFor="referral-input"
+                  className="block text-xs font-semibold text-white/60 mb-1"
+                >
+                  Referral Phone / Code <span className="text-white/30 font-normal">(optional)</span>
+                </label>
+                <input
+                  id="referral-input"
+                  type="text"
+                  value={referredBy || ''}
+                  onChange={(e) => {
+                    const val = e.target.value.trim();
+                    if (setReferredBy) setReferredBy(val);
+                    try {
+                      if (val) localStorage.setItem('nfcs_raffle_ref', val);
+                      else localStorage.removeItem('nfcs_raffle_ref');
+                    } catch {}
+                  }}
+                  onFocus={() => onFocusChange?.(true)}
+                  onBlur={() => onFocusChange?.(false)}
+                  placeholder="e.g. 08012345678"
+                  className="w-full underline-input text-sm text-white placeholder:text-white/25 py-2 font-mono"
+                />
+              </div>
+            )}
           </div>
         </div>
       </div>

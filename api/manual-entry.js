@@ -17,10 +17,114 @@ function getSupabase() {
 }
 
 const UNIT_PRICE = 200;
+const REFERRAL_MILESTONE = 10;
 
 function calculateBonusTickets(qty) {
   const q = parseInt(qty, 10) || 0;
   return Math.max(0, Math.floor(q / 10)); // 1 extra free ticket for every 10 tickets purchased
+}
+
+function normalizePhone(phone) {
+  if (!phone || typeof phone !== 'string') return '';
+  let digits = phone.replace(/\D/g, '');
+  if (digits.startsWith('2340')) {
+    digits = digits.slice(3); // e.g. +234080... -> 080...
+  } else if (digits.startsWith('234') && digits.length >= 13) {
+    digits = '0' + digits.slice(3);
+  } else if (digits.length === 10) {
+    digits = '0' + digits;
+  }
+  return digits;
+}
+
+async function processReferralMilestones(supabase, rawPromoterPhone) {
+  const canonicalPhone = normalizePhone(rawPromoterPhone);
+  if (!canonicalPhone || canonicalPhone.length < 8) return null;
+  const last10 = canonicalPhone.slice(-10);
+
+  try {
+    const { data: referredOrders, error: refErr } = await supabase
+      .from('raffle_orders')
+      .select('quantity, total_amount')
+      .or(`referred_by.eq.${canonicalPhone},referred_by.ilike.%${last10}%`)
+      .eq('payment_status', 'success');
+
+    if (refErr || !referredOrders) return null;
+
+    const totalPaidTickets = referredOrders.reduce((sum, o) => {
+      const paid = Math.floor((Number(o.total_amount) || 0) / UNIT_PRICE);
+      return sum + Math.max(paid, 0);
+    }, 0);
+
+    const earnedMilestones = Math.floor(totalPaidTickets / REFERRAL_MILESTONE);
+    if (earnedMilestones <= 0) return null;
+
+    const { data: existingBonusOrders, error: bonusErr } = await supabase
+      .from('raffle_orders')
+      .select('quantity')
+      .or(`buyer_phone.eq.${canonicalPhone},buyer_phone.ilike.%${last10}%`)
+      .eq('channel', 'referral_bonus')
+      .eq('payment_status', 'success');
+
+    if (bonusErr) return null;
+
+    const alreadyAwarded = (existingBonusOrders || []).reduce(
+      (sum, o) => sum + (o.quantity || 0),
+      0
+    );
+    const newTicketsToIssue = earnedMilestones - alreadyAwarded;
+
+    if (newTicketsToIssue <= 0) return null;
+
+    const { data: prevOrder } = await supabase
+      .from('raffle_orders')
+      .select('buyer_name, buyer_email, department, buyer_phone')
+      .or(`buyer_phone.eq.${canonicalPhone},buyer_phone.ilike.%${last10}%`)
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    const promoterName = prevOrder?.buyer_name || 'Federation Week Promoter';
+    const promoterEmail = prevOrder?.buyer_email || null;
+    const promoterDept = prevOrder?.department || null;
+    const officialPromoterPhone = normalizePhone(prevOrder?.buyer_phone) || canonicalPhone;
+
+    const { data: bonusOrder, error: insertErr } = await supabase
+      .from('raffle_orders')
+      .insert({
+        buyer_name: promoterName,
+        buyer_phone: officialPromoterPhone,
+        buyer_email: promoterEmail,
+        department: promoterDept,
+        quantity: newTicketsToIssue,
+        unit_price: 0,
+        total_amount: 0,
+        channel: 'referral_bonus',
+        payment_method: 'referral_milestone',
+        payment_status: 'success',
+      })
+      .select()
+      .single();
+
+    if (insertErr || !bonusOrder) return null;
+
+    const bonusTicketRows = [];
+    for (let i = 0; i < newTicketsToIssue; i++) {
+      const ticketRes = await supabase.rpc('next_raffle_ticket_number');
+      if (!ticketRes.error && ticketRes.data) {
+        bonusTicketRows.push({ order_id: bonusOrder.id, ticket_number: ticketRes.data });
+      }
+    }
+
+    if (bonusTicketRows.length > 0) {
+      await supabase.from('raffle_tickets').insert(bonusTicketRows);
+    }
+
+    return { bonusTickets: bonusTicketRows.map(r => r.ticket_number), promoterPhone: officialPromoterPhone };
+  } catch (err) {
+    console.error('Error in manual-entry processReferralMilestones:', err);
+    return null;
+  }
 }
 
 export default async function handler(req, res) {
@@ -41,6 +145,7 @@ export default async function handler(req, res) {
     quantity,
     payment_method,
     recorded_by,
+    referred_by,
   } = req.body || {};
 
   const cleanName = (buyer_name || '').trim();
@@ -48,6 +153,13 @@ export default async function handler(req, res) {
   const cleanEmail = (buyer_email || '').trim();
   const cleanDept = (department || '').trim();
   const cleanRecordedBy = (recorded_by || '').trim();
+  const rawReferredBy = (referred_by || '').trim();
+  let cleanReferredBy = null;
+  if (rawReferredBy && rawReferredBy.length >= 5) {
+    if (cleanPhone.replace(/\D/g, '') !== rawReferredBy.replace(/\D/g, '')) {
+      cleanReferredBy = rawReferredBy;
+    }
+  }
 
   if (!cleanName || !cleanPhone || !cleanEmail || !quantity || !cleanRecordedBy) {
     return res.status(400).json({ error: 'Missing required fields (Name, Phone, Email, Quantity, and Recorded By are required)' });
@@ -68,24 +180,59 @@ export default async function handler(req, res) {
   try {
     const supabase = getSupabase();
 
+    // Canonicalize buyer phone
+    const canonicalBuyerPhone = normalizePhone(cleanPhone) || cleanPhone;
+
+    // Verify Option 1: promoter must have already bought a ticket to be eligible
+    if (cleanReferredBy) {
+      const last10 = cleanReferredBy.replace(/\D/g, '').slice(-10);
+      const { data: promoterRecord } = await supabase
+        .from('raffle_orders')
+        .select('id, buyer_phone')
+        .or(`buyer_phone.eq.${cleanReferredBy},buyer_phone.ilike.%${last10}%`)
+        .eq('payment_status', 'success')
+        .limit(1)
+        .maybeSingle();
+
+      if (promoterRecord) {
+        cleanReferredBy = normalizePhone(promoterRecord.buyer_phone) || normalizePhone(cleanReferredBy);
+      } else {
+        cleanReferredBy = null; // Promoter has not bought a ticket
+      }
+    }
+
     // 1. Create the order record in raffle_orders
-    const { data: order, error: orderError } = await supabase
+    let orderPayload = {
+      buyer_name: cleanName,
+      buyer_phone: canonicalBuyerPhone,
+      buyer_email: cleanEmail || null,
+      department: cleanDept || null,
+      quantity: totalTicketsCount,
+      unit_price: UNIT_PRICE,
+      total_amount: qty * UNIT_PRICE,
+      channel: 'walk-in',
+      payment_method: payment_method || 'cash',
+      payment_status: 'success',
+      recorded_by: cleanRecordedBy,
+      referred_by: cleanReferredBy,
+    };
+
+    let { data: order, error: orderError } = await supabase
       .from('raffle_orders')
-      .insert({
-        buyer_name: cleanName,
-        buyer_phone: cleanPhone,
-        buyer_email: cleanEmail || null,
-        department: cleanDept || null,
-        quantity: totalTicketsCount,
-        unit_price: UNIT_PRICE,
-        total_amount: qty * UNIT_PRICE,
-        channel: 'walk-in',
-        payment_method: payment_method || 'cash',
-        payment_status: 'success',
-        recorded_by: cleanRecordedBy,
-      })
+      .insert(orderPayload)
       .select()
       .single();
+
+    if (orderError && orderError.message && orderError.message.includes('referred_by')) {
+      delete orderPayload.referred_by;
+      const fallback = await supabase
+        .from('raffle_orders')
+        .insert(orderPayload)
+        .select()
+        .single();
+      order = fallback.data;
+      orderError = fallback.error;
+    }
 
     if (orderError) throw orderError;
 
@@ -199,6 +346,11 @@ export default async function handler(req, res) {
         emailError = err.message;
         console.warn('Resend email exception in manual-entry:', err);
       }
+    // Trigger referral milestone processing in background
+    if (cleanReferredBy) {
+      processReferralMilestones(supabase, cleanReferredBy).catch((err) =>
+        console.warn('Manual entry referral processing exception:', err)
+      );
     }
 
     return res.status(200).json({

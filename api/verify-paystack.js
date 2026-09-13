@@ -18,10 +18,167 @@ function getSupabase() {
 }
 
 const UNIT_PRICE = 200;
+const REFERRAL_MILESTONE = 10; // 10 tickets bought with link = 1 free ticket for promoter
 
 function calculateBonusTickets(qty) {
   const q = parseInt(qty, 10) || 0;
   return Math.max(0, Math.floor(q / 10)); // 1 extra free ticket for every 10 tickets purchased
+}
+
+function normalizePhone(phone) {
+  if (!phone || typeof phone !== 'string') return '';
+  let digits = phone.replace(/\D/g, '');
+  if (digits.startsWith('2340')) {
+    digits = digits.slice(3); // e.g. +234080... -> 080...
+  } else if (digits.startsWith('234') && digits.length >= 13) {
+    digits = '0' + digits.slice(3);
+  } else if (digits.length === 10) {
+    digits = '0' + digits;
+  }
+  return digits;
+}
+
+// Background processor to issue free tickets when a promoter's referrals cross a milestone of 10 tickets
+async function processReferralMilestones(supabase, rawPromoterPhone) {
+  const canonicalPhone = normalizePhone(rawPromoterPhone);
+  if (!canonicalPhone || canonicalPhone.length < 8) return null;
+  const last10 = canonicalPhone.slice(-10);
+
+  try {
+    // 1. Sum up all paid tickets referred by this promoter phone (matches either 080 or +234)
+    const { data: referredOrders, error: refErr } = await supabase
+      .from('raffle_orders')
+      .select('quantity, total_amount')
+      .or(`referred_by.eq.${canonicalPhone},referred_by.ilike.%${last10}%`)
+      .eq('payment_status', 'success');
+
+    if (refErr || !referredOrders) return null;
+
+    const totalPaidTickets = referredOrders.reduce((sum, o) => {
+      const paid = Math.floor((Number(o.total_amount) || 0) / UNIT_PRICE);
+      return sum + Math.max(paid, 0);
+    }, 0);
+
+    const earnedMilestones = Math.floor(totalPaidTickets / REFERRAL_MILESTONE);
+    if (earnedMilestones <= 0) return null;
+
+    // 2. Count already awarded bonus tickets to this promoter
+    const { data: existingBonusOrders, error: bonusErr } = await supabase
+      .from('raffle_orders')
+      .select('quantity')
+      .or(`buyer_phone.eq.${canonicalPhone},buyer_phone.ilike.%${last10}%`)
+      .eq('channel', 'referral_bonus')
+      .eq('payment_status', 'success');
+
+    if (bonusErr) return null;
+
+    const alreadyAwarded = (existingBonusOrders || []).reduce(
+      (sum, o) => sum + (o.quantity || 0),
+      0
+    );
+    const newTicketsToIssue = earnedMilestones - alreadyAwarded;
+
+    if (newTicketsToIssue <= 0) return null;
+
+    // 3. Find promoter's profile (name & email) from any previous order
+    const { data: prevOrder } = await supabase
+      .from('raffle_orders')
+      .select('buyer_name, buyer_email, department, buyer_phone')
+      .or(`buyer_phone.eq.${canonicalPhone},buyer_phone.ilike.%${last10}%`)
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    const promoterName = prevOrder?.buyer_name || 'Federation Week Promoter';
+    const promoterEmail = prevOrder?.buyer_email || null;
+    const promoterDept = prevOrder?.department || null;
+    const officialPromoterPhone = normalizePhone(prevOrder?.buyer_phone) || canonicalPhone;
+
+    // 4. Create the referral bonus order
+    const { data: bonusOrder, error: insertErr } = await supabase
+      .from('raffle_orders')
+      .insert({
+        buyer_name: promoterName,
+        buyer_phone: officialPromoterPhone,
+        buyer_email: promoterEmail,
+        department: promoterDept,
+        quantity: newTicketsToIssue,
+        unit_price: 0,
+        total_amount: 0,
+        channel: 'referral_bonus',
+        payment_method: 'referral_milestone',
+        payment_status: 'success',
+      })
+      .select()
+      .single();
+
+    if (insertErr || !bonusOrder) {
+      console.warn('Could not insert referral bonus order:', insertErr);
+      return null;
+    }
+
+    // 5. Issue official ticket numbers
+    const bonusTicketRows = [];
+    for (let i = 0; i < newTicketsToIssue; i++) {
+      const ticketRes = await supabase.rpc('next_raffle_ticket_number');
+      if (!ticketRes.error && ticketRes.data) {
+        bonusTicketRows.push({ order_id: bonusOrder.id, ticket_number: ticketRes.data });
+      }
+    }
+
+    if (bonusTicketRows.length > 0) {
+      await supabase.from('raffle_tickets').insert(bonusTicketRows);
+    }
+
+    const bonusTicketNumbers = bonusTicketRows.map((r) => r.ticket_number);
+
+    // 6. Send email notification if promoter has an email on file
+    if (process.env.RESEND_API_KEY && promoterEmail && bonusTicketNumbers.length > 0) {
+      const chipsHtml = bonusTicketNumbers
+        .map(
+          (num) => `
+          <span style="display:inline-block; background:#16342a; color:#FBE202; font-family:Courier, monospace; font-weight:bold; font-size:15px; padding:6px 12px; margin:4px; border-radius:6px; border:1px solid #FBE202;">
+            ${num}
+          </span>
+        `
+        )
+        .join('');
+
+      await fetch('https://api.resend.com/emails', {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${process.env.RESEND_API_KEY.trim()}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          from: process.env.RESEND_FROM_EMAIL || 'tickets@resend.dev',
+          to: [promoterEmail],
+          subject: `🎉 Congratulations! You earned a FREE Raffle Ticket (${bonusTicketNumbers.length} Entry) for Federation Week!`,
+          html: `
+            <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 28px; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px;">
+              <h2 style="color: #166C16; margin-top: 0;">🎉 You Earned a FREE Raffle Ticket!</h2>
+              <p style="font-size: 15px; color: #334155;">Hi <strong>${promoterName}</strong>,</p>
+              <p style="font-size: 15px; color: #334155;">
+                Awesome news! Your friends just bought tickets using your referral link, bringing you to your milestone (${totalPaidTickets} total tickets referred)!
+              </p>
+              <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 16px; margin: 20px 0; text-align: center;">
+                <p style="font-size: 13px; font-weight: bold; color: #166C16; text-transform: uppercase; margin: 0 0 8px;">Your Free Bonus Ticket Number${bonusTicketNumbers.length > 1 ? 's' : ''}:</p>
+                ${chipsHtml}
+              </div>
+              <p style="font-size: 14px; color: #64748b;">
+                Every 10 tickets bought with your link earns you another free entry into the live draw on Sunday, 20th September 2026! Keep sharing!
+              </p>
+            </div>
+          `,
+        }),
+      }).catch((err) => console.warn('Could not send referral reward email:', err));
+    }
+
+    return { bonusTickets: bonusTicketNumbers, promoterPhone };
+  } catch (err) {
+    console.error('Error in processReferralMilestones:', err);
+    return null;
+  }
 }
 
 export default async function handler(req, res) {
@@ -132,24 +289,62 @@ export default async function handler(req, res) {
       });
     }
 
+    // Canonicalize buyer phone
+    const canonicalBuyerPhone = normalizePhone(buyer_phone) || buyer_phone;
+
+    // Extract & validate referral phone (Option 1: must have bought a ticket first, and no self-referral)
+    const rawReferredBy = (body.referred_by || meta.referred_by || '').trim();
+    let cleanReferredBy = null;
+    if (rawReferredBy && rawReferredBy.length >= 5) {
+      if (normalizePhone(buyer_phone) !== normalizePhone(rawReferredBy)) {
+        const last10 = normalizePhone(rawReferredBy).slice(-10);
+        const { data: promoterRecord } = await supabase
+          .from('raffle_orders')
+          .select('id, buyer_phone')
+          .or(`buyer_phone.eq.${rawReferredBy},buyer_phone.ilike.%${last10}%`)
+          .eq('payment_status', 'success')
+          .limit(1)
+          .maybeSingle();
+
+        if (promoterRecord) {
+          cleanReferredBy = normalizePhone(promoterRecord.buyer_phone) || normalizePhone(rawReferredBy);
+        }
+      }
+    }
+
     // 3. Create the order record (record total entries issued).
-    const { data: order, error: orderError } = await supabase
+    let orderPayload = {
+      buyer_name,
+      buyer_phone: canonicalBuyerPhone,
+      buyer_email: buyer_email || null,
+      department: department || null,
+      quantity: totalTicketsCount,
+      unit_price: UNIT_PRICE,
+      total_amount: qty * UNIT_PRICE,
+      channel: 'online',
+      payment_reference: reference,
+      payment_method: 'paystack',
+      payment_status: 'success',
+      referred_by: cleanReferredBy,
+    };
+
+    let { data: order, error: orderError } = await supabase
       .from('raffle_orders')
-      .insert({
-        buyer_name,
-        buyer_phone,
-        buyer_email: buyer_email || null,
-        department: department || null,
-        quantity: totalTicketsCount,
-        unit_price: UNIT_PRICE,
-        total_amount: qty * UNIT_PRICE,
-        channel: 'online',
-        payment_reference: reference,
-        payment_method: 'paystack',
-        payment_status: 'success',
-      })
+      .insert(orderPayload)
       .select()
       .single();
+
+    // Graceful fallback if referred_by column has not been added to Supabase yet
+    if (orderError && orderError.message && orderError.message.includes('referred_by')) {
+      delete orderPayload.referred_by;
+      const fallback = await supabase
+        .from('raffle_orders')
+        .insert(orderPayload)
+        .select()
+        .single();
+      order = fallback.data;
+      orderError = fallback.error;
+    }
 
     if (orderError) throw orderError;
 
@@ -232,6 +427,17 @@ export default async function handler(req, res) {
               <em>Prizes: 1st, 2nd, and 3rd major prizes, plus consolation prizes for 4th to 10th winners. Keep this email safe as official verification.</em>
             </p>
 
+            <!-- Referral Share Section in Email -->
+            <div style="background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 10px; padding: 18px; margin: 24px 0; text-align: center;">
+              <p style="margin: 0 0 6px; font-weight: 800; font-size: 14px; color: #166534;">🎁 Want More Free Tickets Into the Draw?</p>
+              <p style="margin: 0 0 10px; font-size: 13px; color: #15803d; line-height: 1.4;">
+                Share your link with course mates & hostel friends! For every <strong>10 tickets</strong> bought with your link, you automatically get <strong>1 FREE raffle ticket</strong>!
+              </p>
+              <p style="margin: 0; font-size: 12px; font-family: monospace; color: #166534; word-break: break-all;">
+                https://nfcsunn.org/raffle-draw?ref=${encodeURIComponent(order.buyer_phone)}
+              </p>
+            </div>
+
             <hr style="border: none; border-top: 1px solid #e2e8f0; margin: 28px 0 16px;" />
             <p style="font-size: 11px; color: #94a3b8; text-align: center; margin: 0;">
               Nigeria Federation of Catholic Students (NFCS) · St. Peter's Catholic Chaplaincy, University of Nigeria, Nsukka
@@ -264,6 +470,13 @@ export default async function handler(req, res) {
         emailError = err.message;
         console.warn('Resend email exception:', err);
       }
+    }
+
+    // 6. Process Referral Milestones in background (10 tickets referred = 1 free ticket)
+    if (cleanReferredBy) {
+      processReferralMilestones(supabase, cleanReferredBy).catch((err) =>
+        console.warn('Referral milestone processing exception:', err)
+      );
     }
 
     return res.status(200).json({

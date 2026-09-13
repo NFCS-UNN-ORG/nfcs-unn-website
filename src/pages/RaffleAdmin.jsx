@@ -22,7 +22,9 @@ import {
   Sparkles,
   Mail,
   Loader2,
+  Gift,
 } from 'lucide-react';
+import { formatPhoneDisplay, normalizeNigerianPhone } from '../lib/utils';
 
 const ADMIN_SECRET_STORAGE_KEY = 'nfcs_admin_secret';
 const SAVED_RECORDER_KEY = 'nfcs_admin_last_recorder';
@@ -44,6 +46,8 @@ export default function RaffleAdmin() {
   const [search, setSearch] = useState('');
   const [channelFilter, setChannelFilter] = useState('all'); // 'all' | 'online' | 'walk-in'
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [isSyncingPaystack, setIsSyncingPaystack] = useState(false);
+  const [syncFeedback, setSyncFeedback] = useState(null);
   const [copiedTicket, setCopiedTicket] = useState('');
   const [unlocking, setUnlocking] = useState(false);
   const [unlockError, setUnlockError] = useState('');
@@ -71,6 +75,7 @@ export default function RaffleAdmin() {
     quantity: 1,
     payment_method: 'cash',
     recorded_by: localStorage.getItem(SAVED_RECORDER_KEY) || '',
+    referred_by: '',
   });
   const [manualResult, setManualResult] = useState(null);
   const [manualError, setManualError] = useState('');
@@ -147,6 +152,37 @@ export default function RaffleAdmin() {
     setIsRefreshing(true);
     await Promise.all([refreshSummary(), refreshOrders(secret)]);
     setTimeout(() => setIsRefreshing(false), 450);
+  }
+
+  async function handleSyncPaystack() {
+    if (!secret || isSyncingPaystack) return;
+    setIsSyncingPaystack(true);
+    setSyncFeedback(null);
+    try {
+      const res = await fetch('/api/admin-sync-paystack', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-admin-secret': secret,
+        },
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setSyncFeedback({ type: 'error', message: data.error || 'Failed to sync with Paystack.' });
+      } else {
+        setSyncFeedback({
+          type: 'success',
+          message: data.message,
+        });
+        await Promise.all([refreshSummary(), refreshOrders(secret)]);
+      }
+    } catch (err) {
+      console.error('Paystack sync error:', err);
+      setSyncFeedback({ type: 'error', message: 'Network error while syncing with Paystack.' });
+    } finally {
+      setIsSyncingPaystack(false);
+      setTimeout(() => setSyncFeedback(null), 6000);
+    }
   }
 
   async function unlock(enteredSecret) {
@@ -229,9 +265,10 @@ export default function RaffleAdmin() {
         body: JSON.stringify({
           ...manualForm,
           buyer_name: buyerName,
-          buyer_phone: buyerPhone,
+          buyer_phone: normalizeNigerianPhone(buyerPhone) || buyerPhone,
           buyer_email: buyerEmail,
           recorded_by: recordedBy,
+          referred_by: normalizeNigerianPhone(manualForm.referred_by) || manualForm.referred_by || '',
           quantity: qty,
         }),
       });
@@ -250,6 +287,7 @@ export default function RaffleAdmin() {
         quantity: 1,
         payment_method: 'cash',
         recorded_by: recordedBy,
+        referred_by: '',
       });
       refreshSummary();
       refreshOrders(secret);
@@ -262,19 +300,20 @@ export default function RaffleAdmin() {
 
   function exportCSV() {
     const rows = [
-      ['Ticket Number', 'Buyer Name', 'Phone', 'Email', 'Department', 'Channel', 'Payment Method', 'Recorded By', 'Amount', 'Date'],
+      ['Ticket Number', 'Buyer Name', 'Phone', 'Email', 'Department', 'Channel', 'Payment Method', 'Recorded By', 'Referred By', 'Amount', 'Date'],
     ];
     orders.forEach((o) => {
       (o.raffle_tickets || []).forEach((t) => {
         rows.push([
           t.ticket_number,
           o.buyer_name,
-          o.buyer_phone,
+          normalizeNigerianPhone(o.buyer_phone) || o.buyer_phone,
           o.buyer_email || '',
           o.department || '',
           o.channel,
           o.payment_method || 'paystack',
           o.recorded_by || '',
+          normalizeNigerianPhone(o.referred_by) || o.referred_by || '',
           o.total_amount / (o.quantity || 1),
           o.created_at,
         ]);
@@ -300,7 +339,7 @@ export default function RaffleAdmin() {
         allTickets.push({
           ticketNumber: t.ticket_number,
           buyerName: o.buyer_name,
-          buyerPhone: o.buyer_phone,
+          buyerPhone: formatPhoneDisplay(o.buyer_phone),
           department: o.department,
           channel: o.channel,
         });
@@ -328,7 +367,7 @@ export default function RaffleAdmin() {
     const tickets = (ticketNumbers || []).map((num) => ({
       ticketNumber: num,
       buyerName,
-      buyerPhone,
+      buyerPhone: formatPhoneDisplay(buyerPhone),
       department: buyerDepartment,
       channel,
     }));
@@ -356,12 +395,20 @@ export default function RaffleAdmin() {
       // Search Query
       if (!search.trim()) return true;
       const q = search.toLowerCase().trim();
+      const qDigits = q.replace(/\D/g, '');
+      const buyerDigits = (o.buyer_phone || '').replace(/\D/g, '');
+      const refDigits = (o.referred_by || '').replace(/\D/g, '');
+
+      const phoneMatches = qDigits.length >= 3 && (buyerDigits.includes(qDigits) || refDigits.includes(qDigits));
+
       return (
+        phoneMatches ||
         o.buyer_name?.toLowerCase().includes(q) ||
         o.buyer_phone?.includes(q) ||
         o.buyer_email?.toLowerCase().includes(q) ||
         o.department?.toLowerCase().includes(q) ||
         o.recorded_by?.toLowerCase().includes(q) ||
+        o.referred_by?.toLowerCase().includes(q) ||
         (o.raffle_tickets || []).some((t) => t.ticket_number.toLowerCase().includes(q))
       );
     });
@@ -371,12 +418,51 @@ export default function RaffleAdmin() {
     return orders.reduce((acc, o) => acc + (o.raffle_tickets?.length || 0), 0);
   }, [orders]);
 
-  const onlineOrdersCount = useMemo(() => {
-    return orders.filter((o) => o.channel === 'online').length;
+  const paidTicketsSold = useMemo(() => {
+    return orders.reduce((acc, o) => {
+      const paid = Math.floor((Number(o.total_amount) || 0) / UNIT_PRICE);
+      return acc + Math.max(0, paid);
+    }, 0);
   }, [orders]);
 
-  const walkinOrdersCount = useMemo(() => {
-    return orders.filter((o) => o.channel === 'walk-in').length;
+  const referralBonusTicketsCount = useMemo(() => {
+    return orders
+      .filter((o) => o.channel === 'referral_bonus')
+      .reduce((acc, o) => acc + (o.raffle_tickets?.length || o.quantity || 0), 0);
+  }, [orders]);
+
+  const freeTicketsCount = useMemo(() => {
+    return Math.max(0, totalTicketsInSystem - paidTicketsSold);
+  }, [totalTicketsInSystem, paidTicketsSold]);
+
+  const bulkGiftTicketsCount = useMemo(() => {
+    return Math.max(0, freeTicketsCount - referralBonusTicketsCount);
+  }, [freeTicketsCount, referralBonusTicketsCount]);
+
+  const totalRevenueRaised = useMemo(() => {
+    return orders.reduce((acc, o) => acc + (Number(o.total_amount) || 0), 0);
+  }, [orders]);
+
+  const onlineOrders = useMemo(() => {
+    return orders.filter((o) => o.channel === 'online');
+  }, [orders]);
+
+  const onlineOrdersCount = onlineOrders.length;
+  const onlineRevenue = useMemo(() => {
+    return onlineOrders.reduce((acc, o) => acc + (Number(o.total_amount) || 0), 0);
+  }, [onlineOrders]);
+
+  const walkinOrders = useMemo(() => {
+    return orders.filter((o) => o.channel === 'walk-in');
+  }, [orders]);
+
+  const walkinOrdersCount = walkinOrders.length;
+  const walkinRevenue = useMemo(() => {
+    return walkinOrders.reduce((acc, o) => acc + (Number(o.total_amount) || 0), 0);
+  }, [walkinOrders]);
+
+  const referralBonusOrdersCount = useMemo(() => {
+    return orders.filter((o) => o.channel === 'referral_bonus').length;
   }, [orders]);
 
   // Passcode Lock Screen (or initial authentication check)
@@ -499,6 +585,17 @@ export default function RaffleAdmin() {
               <RefreshCw className={`w-4 h-4 ${isRefreshing ? 'animate-spin text-[#166C16]' : ''}`} />
             </button>
 
+            {/* Sync with Paystack Button */}
+            <button
+              onClick={handleSyncPaystack}
+              disabled={isSyncingPaystack || isRefreshing}
+              className="flex items-center gap-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-300 font-bold text-xs px-3.5 py-2.5 rounded-xl shadow-xs transition-all active:scale-95 cursor-pointer disabled:opacity-50"
+              title="Reconcile live transactions directly with Paystack API"
+            >
+              <RefreshCw className={`w-3.5 h-3.5 ${isSyncingPaystack ? 'animate-spin text-emerald-600' : 'text-emerald-700'}`} />
+              <span>{isSyncingPaystack ? 'Syncing Paystack…' : 'Sync Paystack'}</span>
+            </button>
+
             {/* Primary Action: Open Walk-in Modal */}
             <button
               onClick={() => {
@@ -544,37 +641,109 @@ export default function RaffleAdmin() {
       </header>
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 py-8 space-y-8">
+        {/* Paystack Sync Feedback Notification */}
+        <AnimatePresence>
+          {syncFeedback && (
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              className={`p-3.5 rounded-2xl border text-xs font-bold flex items-center justify-between shadow-md ${
+                syncFeedback.type === 'success'
+                  ? 'bg-emerald-50 border-emerald-300 text-emerald-900'
+                  : 'bg-red-50 border-red-300 text-red-900'
+              }`}
+            >
+              <div className="flex items-center gap-2">
+                {syncFeedback.type === 'success' ? (
+                  <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                ) : (
+                  <AlertCircle className="w-4 h-4 text-red-600 shrink-0" />
+                )}
+                <span>{syncFeedback.message}</span>
+              </div>
+              <button
+                onClick={() => setSyncFeedback(null)}
+                className="text-stone-400 hover:text-stone-600 p-1 cursor-pointer"
+              >
+                <X className="w-3.5 h-3.5" />
+              </button>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
         {/* 2. Top Stats Overview */}
-        {summary ? (
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
-            <StatCard
-              label="Tickets Sold"
-              value={summary.tickets_sold}
-              subtext="Total valid entries in draw"
-              icon={<Ticket className="w-5 h-5 text-white" />}
-              gradient="bg-gradient-to-br from-[#166C16] to-[#175319]"
-            />
-            <StatCard
-              label="Total Revenue"
-              value={`₦${Number(summary.total_revenue).toLocaleString()}`}
-              subtext="Combined funds raised"
-              icon={<Coins className="w-5 h-5 text-[#175319]" />}
-              gradient="bg-gradient-to-br from-[#FBE202] to-amber-500 !text-[#175319]"
-            />
-            <StatCard
-              label="Online Orders"
-              value={summary.online_orders}
-              subtext="Paid via Paystack gateway"
-              icon={<Globe className="w-5 h-5 text-white" />}
-              gradient="bg-gradient-to-br from-sky-600 to-indigo-700"
-            />
-            <StatCard
-              label="Walk-in Sales"
-              value={summary.walkin_orders}
-              subtext="Cash & Bank Transfers recorded"
-              icon={<Users className="w-5 h-5 text-white" />}
-              gradient="bg-gradient-to-br from-emerald-600 to-teal-700"
-            />
+        {orders.length > 0 || summary ? (
+          <div className="space-y-6">
+            {/* Row 1: Ticket & Drum Breakdown */}
+            <div>
+              <div className="flex items-center justify-between mb-3 px-1">
+                <span className="text-xs font-black uppercase tracking-wider text-stone-500">
+                  Ticket Distribution & Drum Slips
+                </span>
+                <span className="text-[11px] font-bold text-stone-400">
+                  {totalTicketsInSystem} total stubs in raffle drum
+                </span>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6">
+                <StatCard
+                  label="Total Drum Entries"
+                  value={totalTicketsInSystem || summary?.tickets_sold || 0}
+                  subtext="All physical slips in the live draw"
+                  icon={<Ticket className="w-5 h-5 text-white" />}
+                  gradient="bg-gradient-to-br from-[#166C16] to-[#175319]"
+                />
+                <StatCard
+                  label="Paid Tickets Sold"
+                  value={paidTicketsSold}
+                  subtext={`₦${(paidTicketsSold * UNIT_PRICE).toLocaleString()} raised @ ₦200/ticket`}
+                  icon={<CreditCard className="w-5 h-5 text-white" />}
+                  gradient="bg-gradient-to-br from-blue-600 to-indigo-700"
+                />
+                <StatCard
+                  label="Free / Gift Tickets"
+                  value={freeTicketsCount}
+                  subtext={`${referralBonusTicketsCount} referral bonuses • ${bulkGiftTicketsCount} bulk gifts`}
+                  icon={<Gift className="w-5 h-5 text-white" />}
+                  gradient="bg-gradient-to-br from-purple-600 to-fuchsia-700"
+                />
+              </div>
+            </div>
+
+            {/* Row 2: Revenue & Channel Breakdown */}
+            <div>
+              <div className="flex items-center justify-between mb-3 px-1">
+                <span className="text-xs font-black uppercase tracking-wider text-stone-500">
+                  Financials & Sales Channels
+                </span>
+                <span className="text-[11px] font-bold text-stone-400">
+                  Verified gross proceeds
+                </span>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6">
+                <StatCard
+                  label="Total Revenue"
+                  value={`₦${Number(totalRevenueRaised || summary?.total_revenue || 0).toLocaleString()}`}
+                  subtext="Combined funds raised across all channels"
+                  icon={<Coins className="w-5 h-5 text-[#175319]" />}
+                  gradient="bg-gradient-to-br from-[#FBE202] to-amber-500 !text-[#175319]"
+                />
+                <StatCard
+                  label="Online Orders"
+                  value={`${onlineOrdersCount} orders`}
+                  subtext={`₦${onlineRevenue.toLocaleString()} via Paystack gateway`}
+                  icon={<Globe className="w-5 h-5 text-white" />}
+                  gradient="bg-gradient-to-br from-emerald-600 to-teal-700"
+                />
+                <StatCard
+                  label="Walk-in Sales"
+                  value={`${walkinOrdersCount} sales`}
+                  subtext={`₦${walkinRevenue.toLocaleString()} cash & bank transfer`}
+                  icon={<Users className="w-5 h-5 text-white" />}
+                  gradient="bg-gradient-to-br from-amber-600 to-orange-700"
+                />
+              </div>
+            </div>
           </div>
         ) : (
           <div className="p-8 rounded-2xl bg-white shadow-sm border border-stone-200 flex items-center justify-center gap-3">
@@ -632,6 +801,16 @@ export default function RaffleAdmin() {
                 >
                   Walk-in ({walkinOrdersCount})
                 </button>
+                <button
+                  onClick={() => setChannelFilter('referral_bonus')}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-extrabold transition-all cursor-pointer ${
+                    channelFilter === 'referral_bonus'
+                      ? 'bg-white text-purple-900 shadow-xs'
+                      : 'text-stone-600 hover:text-stone-900'
+                  }`}
+                >
+                  Referrals ({referralBonusOrdersCount})
+                </button>
               </div>
 
               {/* Real-time Search Field */}
@@ -662,11 +841,11 @@ export default function RaffleAdmin() {
                 <tr className="bg-stone-100/70 border-b border-stone-200 text-[11px] font-black uppercase tracking-wider text-stone-500">
                   <th className="px-5 py-3.5">Buyer</th>
                   <th className="px-5 py-3.5">Phone</th>
-                  <th className="px-5 py-3.5">Dept / Level</th>
+                  <th className="px-5 py-3.5 max-w-[180px]">Dept / Level</th>
                   <th className="px-5 py-3.5">Channel</th>
                   <th className="px-5 py-3.5 text-center">Entries</th>
                   <th className="px-5 py-3.5">Amount</th>
-                  <th className="px-5 py-3.5">Ticket Numbers Issued</th>
+                  <th className="px-5 py-3.5 w-[200px] max-w-[200px]">Ticket Numbers Issued</th>
                   <th className="px-5 py-3.5 text-right">Actions</th>
                 </tr>
               </thead>
@@ -683,11 +862,13 @@ export default function RaffleAdmin() {
                           )}
                         </td>
                         <td className="px-5 py-4 whitespace-nowrap text-stone-700 font-mono font-bold">
-                          {o.buyer_phone}
+                          {formatPhoneDisplay(o.buyer_phone)}
                         </td>
-                        <td className="px-5 py-4 whitespace-nowrap text-stone-600">
+                        <td className="px-5 py-4 max-w-[180px] text-stone-600" title={o.department || ''}>
                           {o.department ? (
-                            <span className="font-bold text-stone-800">{o.department}</span>
+                            <span className="font-bold text-stone-800 block truncate" title={o.department}>
+                              {o.department}
+                            </span>
                           ) : (
                             <span className="text-stone-400">—</span>
                           )}
@@ -698,19 +879,29 @@ export default function RaffleAdmin() {
                               className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider border ${
                                 o.channel === 'online'
                                    ? 'bg-emerald-50 text-emerald-800 border-emerald-200'
+                                   : o.channel === 'referral_bonus'
+                                   ? 'bg-purple-50 text-purple-800 border-purple-200'
                                    : 'bg-amber-50 text-amber-800 border-amber-200'
                               }`}
                             >
                               {o.channel === 'online' ? (
                                 <Globe className="w-3 h-3 text-emerald-600" />
+                              ) : o.channel === 'referral_bonus' ? (
+                                <Sparkles className="w-3 h-3 text-purple-600" />
                               ) : (
                                 <Users className="w-3 h-3 text-amber-600" />
                               )}
-                              <span>{o.channel}</span>
+                              <span>{o.channel === 'referral_bonus' ? 'Referral Bonus' : o.channel}</span>
                               {o.payment_method && o.channel === 'walk-in' && (
                                 <span className="text-[9px] opacity-75">({o.payment_method})</span>
                               )}
                             </span>
+
+                            {o.referred_by && (
+                              <span className="text-[11px] text-emerald-700 font-medium pl-0.5">
+                                ref: <strong className="font-mono">{formatPhoneDisplay(o.referred_by)}</strong>
+                              </span>
+                            )}
 
                             {o.channel === 'walk-in' && o.recorded_by && (
                               <span className="text-[11px] text-stone-500 font-medium pl-0.5">
@@ -727,24 +918,21 @@ export default function RaffleAdmin() {
                         <td className="px-5 py-4 whitespace-nowrap font-black text-stone-900 text-sm">
                           ₦{Number(o.total_amount).toLocaleString()}
                         </td>
-                        <td className="px-5 py-4">
+                        <td className="px-5 py-4 w-[200px] max-w-[200px]">
                           {(() => {
                             const tickets = o.raffle_tickets || [];
                             if (tickets.length === 0) {
                               return <span className="text-stone-400 text-xs italic">None</span>;
                             }
-                            const isExpanded = expandedTicketOrders.has(o.id);
-                            const visibleTickets = isExpanded ? tickets : tickets.slice(0, 4);
-                            const remaining = tickets.length - 4;
 
                             return (
-                              <div className="flex flex-wrap items-center gap-1 max-w-md py-1">
-                                {visibleTickets.map((t) => (
+                              <div className="w-[190px] max-w-[190px] overflow-x-auto overflow-y-hidden py-1.5 flex items-center gap-1.5 whitespace-nowrap [scrollbar-width:thin] [&::-webkit-scrollbar]:h-1.5 [&::-webkit-scrollbar-track]:bg-stone-100 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-thumb]:bg-stone-300 [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-stone-400">
+                                {tickets.map((t) => (
                                   <button
                                     key={t.ticket_number}
                                     onClick={() => handleCopyTicket(t.ticket_number)}
                                     title="Click to copy ticket number"
-                                    className="inline-flex items-center gap-1 shrink-0 bg-stone-100 hover:bg-[#166C16]/10 text-stone-800 hover:text-[#166C16] border border-stone-200 text-[10px] font-black px-2 py-0.5 rounded-md font-mono tracking-wider transition-all cursor-pointer"
+                                    className="inline-flex items-center gap-1 shrink-0 bg-stone-100 hover:bg-[#166C16]/10 text-stone-800 hover:text-[#166C16] border border-stone-200 text-[10px] font-black px-2 py-0.5 rounded-md font-mono tracking-wider transition-all cursor-pointer shadow-2xs select-none"
                                   >
                                     <span>{t.ticket_number}</span>
                                     {copiedTicket === t.ticket_number ? (
@@ -754,16 +942,6 @@ export default function RaffleAdmin() {
                                     )}
                                   </button>
                                 ))}
-
-                                {remaining > 0 && (
-                                  <button
-                                    onClick={() => toggleExpandTickets(o.id)}
-                                    className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-md bg-stone-200/80 hover:bg-stone-300 text-stone-700 transition-colors cursor-pointer shrink-0"
-                                    title={isExpanded ? 'Collapse tickets' : `View all ${tickets.length} tickets`}
-                                  >
-                                    {isExpanded ? 'Show less' : `+${remaining} more`}
-                                  </button>
-                                )}
                               </div>
                             );
                           })()}
@@ -780,11 +958,11 @@ export default function RaffleAdmin() {
                                   o.channel
                                 )
                               }
-                              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-stone-100 hover:bg-[#166C16]/10 text-stone-700 hover:text-[#166C16] font-bold text-xs border border-stone-200 hover:border-[#166C16]/30 transition-all active:scale-95 cursor-pointer shadow-2xs"
+                              className="p-2 rounded-xl bg-stone-100 hover:bg-[#166C16]/10 text-stone-600 hover:text-[#166C16] border border-stone-200 hover:border-[#166C16]/30 transition-all active:scale-95 cursor-pointer shadow-2xs inline-flex items-center justify-center"
                               title="Print A4 physical drum slips for this order"
+                              aria-label="Print Slips"
                             >
-                              <Printer className="w-3.5 h-3.5" />
-                              <span>Print Slips</span>
+                              <Printer className="w-4 h-4" />
                             </button>
                           )}
                         </td>
@@ -1159,6 +1337,22 @@ export default function RaffleAdmin() {
                           setManualForm({ ...manualForm, recorded_by: e.target.value })
                         }
                         className="w-full px-4 py-3 bg-stone-50 border border-stone-200 rounded-xl text-stone-900 text-sm font-bold focus:outline-none focus:border-[#166C16] focus:ring-2 focus:ring-[#166C16]/20 transition-all placeholder:text-stone-400 placeholder:font-normal"
+                      />
+                    </div>
+
+                    {/* Referred By / Promoter Phone (Optional) */}
+                    <div>
+                      <label className="block text-xs font-bold uppercase tracking-wider text-stone-600 mb-1.5">
+                        Referral Phone / Promoter <span className="text-stone-400 font-normal">(optional)</span>
+                      </label>
+                      <input
+                        type="tel"
+                        placeholder="e.g. 08012345678 (Promoter gets credit towards free tickets)"
+                        value={manualForm.referred_by || ''}
+                        onChange={(e) =>
+                          setManualForm({ ...manualForm, referred_by: e.target.value })
+                        }
+                        className="w-full px-4 py-3 bg-stone-50 border border-stone-200 rounded-xl text-stone-900 text-sm font-bold focus:outline-none focus:border-[#166C16] focus:ring-2 focus:ring-[#166C16]/20 transition-all placeholder:text-stone-400 placeholder:font-normal font-mono"
                       />
                     </div>
 
