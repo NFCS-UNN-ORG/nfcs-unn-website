@@ -23,6 +23,7 @@ import {
   Mail,
   Loader2,
   Gift,
+  MessageCircle,
 } from 'lucide-react';
 import { formatPhoneDisplay, normalizeNigerianPhone } from '../lib/utils';
 
@@ -48,6 +49,7 @@ export default function RaffleAdmin() {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [syncFeedback, setSyncFeedback] = useState(null);
   const [copiedTicket, setCopiedTicket] = useState('');
+  const [resendingOrderId, setResendingOrderId] = useState(null);
   const [unlocking, setUnlocking] = useState(false);
   const [unlockError, setUnlockError] = useState('');
   const [expandedTicketOrders, setExpandedTicketOrders] = useState(new Set());
@@ -297,6 +299,65 @@ export default function RaffleAdmin() {
       setManualLoading(false);
     }
   }
+
+  const handleResendEmail = async (order) => {
+    if (!order.buyer_email) {
+      setSyncFeedback({
+        type: 'error',
+        message: `Cannot send email: No email address recorded for ${order.buyer_name}.`,
+      });
+      setTimeout(() => setSyncFeedback(null), 6000);
+      return;
+    }
+
+    setResendingOrderId(order.id);
+    try {
+      const res = await fetch('/api/resend-ticket-email', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-admin-secret': secret,
+        },
+        body: JSON.stringify({ order_id: order.id }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setSyncFeedback({
+          type: 'error',
+          message: `Email delivery failed: ${data.error || 'Server error'}`,
+        });
+      } else {
+        setSyncFeedback({
+          type: 'success',
+          message: `Tickets successfully emailed to ${order.buyer_email}!`,
+        });
+      }
+    } catch (err) {
+      setSyncFeedback({
+        type: 'error',
+        message: 'Network error trying to contact the email server.',
+      });
+    } finally {
+      setResendingOrderId(null);
+      setTimeout(() => setSyncFeedback(null), 7000);
+    }
+  };
+
+  const handleOpenWhatsApp = (order) => {
+    const rawDigits = (order.buyer_phone || '').replace(/\D/g, '');
+    let intlPhone = rawDigits;
+    if (intlPhone.startsWith('0')) {
+      intlPhone = '234' + intlPhone.slice(1);
+    } else if (!intlPhone.startsWith('234')) {
+      intlPhone = '234' + intlPhone;
+    }
+
+    const tickets = (order.raffle_tickets || []).map((t) => t.ticket_number).join(', ');
+    const message = `Hello ${order.buyer_name}! 🎟️\n\nHere are your official NFCS UNN Federation Week 2026 Raffle Draw tickets:\n\n🎟️ *Tickets:* ${tickets || 'Attached to order'}\n🔢 *Entries:* ${order.quantity}\n💳 *Amount:* ₦${Number(order.total_amount).toLocaleString()}\n\n📅 *Grand Draw:* Sunday, 20th September 2026 at 1:00 PM\n📍 *Venue:* St. Peter's Catholic Chaplaincy inside Seat of Wisdom Hall, UNN\n\nPlease keep this message safe as proof of your entry. Good luck! 🎉`;
+
+    const url = `https://wa.me/${intlPhone}?text=${encodeURIComponent(message)}`;
+    window.open(url, '_blank');
+  };
 
   function exportCSV() {
     const rows = [
@@ -933,24 +994,56 @@ export default function RaffleAdmin() {
                           })()}
                         </td>
                         <td className="px-5 py-4 whitespace-nowrap text-right">
-                          {o.raffle_tickets && o.raffle_tickets.length > 0 && (
-                            <button
-                              onClick={() =>
-                                printOrderDrumSlips(
-                                  o.raffle_tickets.map((t) => t.ticket_number),
-                                  o.buyer_name,
-                                  o.buyer_phone,
-                                  o.department,
-                                  o.channel
-                                )
-                              }
-                              className="p-2 rounded-xl bg-stone-100 hover:bg-[#166C16]/10 text-stone-600 hover:text-[#166C16] border border-stone-200 hover:border-[#166C16]/30 transition-all active:scale-95 cursor-pointer shadow-2xs inline-flex items-center justify-center"
-                              title="Print A4 physical drum slips for this order"
-                              aria-label="Print Slips"
-                            >
-                              <Printer className="w-4 h-4" />
-                            </button>
-                          )}
+                          <div className="flex items-center justify-end gap-1.5">
+                            {/* Resend Ticket Email */}
+                            {o.buyer_email && (
+                              <button
+                                onClick={() => handleResendEmail(o)}
+                                disabled={resendingOrderId === o.id}
+                                className="p-2 rounded-xl bg-stone-100 hover:bg-blue-50 text-stone-600 hover:text-blue-600 border border-stone-200 hover:border-blue-300 transition-all active:scale-95 cursor-pointer shadow-2xs inline-flex items-center justify-center disabled:opacity-50"
+                                title={`Resend tickets email to ${o.buyer_email}`}
+                                aria-label="Resend Email"
+                              >
+                                {resendingOrderId === o.id ? (
+                                  <Loader2 className="w-4 h-4 animate-spin text-blue-600" />
+                                ) : (
+                                  <Mail className="w-4 h-4" />
+                                )}
+                              </button>
+                            )}
+
+                            {/* Send Tickets via WhatsApp */}
+                            {o.buyer_phone && (
+                              <button
+                                onClick={() => handleOpenWhatsApp(o)}
+                                className="p-2 rounded-xl bg-stone-100 hover:bg-emerald-50 text-stone-600 hover:text-emerald-600 border border-stone-200 hover:border-emerald-300 transition-all active:scale-95 cursor-pointer shadow-2xs inline-flex items-center justify-center"
+                                title={`Send tickets to ${o.buyer_name} via WhatsApp`}
+                                aria-label="Send via WhatsApp"
+                              >
+                                <MessageCircle className="w-4 h-4" />
+                              </button>
+                            )}
+
+                            {/* Print A4 Physical Slips */}
+                            {o.raffle_tickets && o.raffle_tickets.length > 0 && (
+                              <button
+                                onClick={() =>
+                                  printOrderDrumSlips(
+                                    o.raffle_tickets.map((t) => t.ticket_number),
+                                    o.buyer_name,
+                                    o.buyer_phone,
+                                    o.department,
+                                    o.channel
+                                  )
+                                }
+                                className="p-2 rounded-xl bg-stone-100 hover:bg-[#166C16]/10 text-stone-600 hover:text-[#166C16] border border-stone-200 hover:border-[#166C16]/30 transition-all active:scale-95 cursor-pointer shadow-2xs inline-flex items-center justify-center"
+                                title="Print A4 physical drum slips for this order"
+                                aria-label="Print Slips"
+                              >
+                                <Printer className="w-4 h-4" />
+                              </button>
+                            )}
+                          </div>
                         </td>
                       </tr>
                     );
@@ -1048,13 +1141,17 @@ export default function RaffleAdmin() {
                         {Number(manualResult.total_amount).toLocaleString()})
                       </p>
                       {manualResult.buyer_email && (
-                        <div className="mt-2.5 inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-100 text-emerald-900 text-xs font-bold border border-emerald-300">
-                          <Mail className="size-3.5 text-emerald-700 shrink-0" />
+                        <div className={`mt-2.5 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold border ${
+                          manualResult.email_sent
+                            ? 'bg-emerald-100 text-emerald-900 border-emerald-300'
+                            : 'bg-amber-100 text-amber-900 border-amber-300'
+                        }`}>
+                          <Mail className="size-3.5 shrink-0" />
                           <span>
                             {manualResult.email_sent ? (
                               <>Official tickets emailed to <strong className="font-mono">{manualResult.buyer_email}</strong></>
                             ) : (
-                              <>Receipt queued for <strong className="font-mono">{manualResult.buyer_email}</strong></>
+                              <>Email delivery skipped/failed. You can share via WhatsApp below or resend from Orders table.</>
                             )}
                           </span>
                         </div>
@@ -1075,13 +1172,36 @@ export default function RaffleAdmin() {
 
                     {/* Print & Next Actions */}
                     <div className="flex flex-col sm:flex-row items-center justify-center gap-2.5 pt-2">
+                      {manualResult.buyer_phone && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const rawDigits = (manualResult.buyer_phone || '').replace(/\D/g, '');
+                            let intlPhone = rawDigits;
+                            if (intlPhone.startsWith('0')) {
+                              intlPhone = '234' + intlPhone.slice(1);
+                            } else if (!intlPhone.startsWith('234')) {
+                              intlPhone = '234' + intlPhone;
+                            }
+                            const tickets = (manualResult.tickets || []).join(', ');
+                            const msg = `Hello ${manualResult.buyer_name}! 🎟️\n\nHere are your official NFCS UNN Federation Week 2026 Raffle Draw tickets:\n\n🎟️ *Tickets:* ${tickets}\n🔢 *Entries:* ${manualResult.quantity}\n💳 *Amount:* ₦${Number(manualResult.total_amount).toLocaleString()}\n\n📅 *Grand Draw:* Sunday, 20th September 2026 at 1:00 PM\n📍 *Venue:* St. Peter's Catholic Chaplaincy inside Seat of Wisdom Hall, UNN\n\nPlease keep this message safe as proof of your entry. Good luck! 🎉`;
+                            window.open(`https://wa.me/${intlPhone}?text=${encodeURIComponent(msg)}`, '_blank');
+                          }}
+                          className="w-full sm:w-auto px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow-md transition-all active:scale-95 cursor-pointer flex items-center justify-center gap-2"
+                        >
+                          <MessageCircle className="w-4 h-4" />
+                          <span>Send on WhatsApp</span>
+                        </button>
+                      )}
+
                       <button
+                        type="button"
                         onClick={() =>
                           printOrderDrumSlips(
                             manualResult.tickets,
                             manualResult.buyer_name,
-                            manualForm.buyer_phone,
-                            manualForm.department,
+                            manualResult.buyer_phone,
+                            manualResult.department,
                             'walk-in'
                           )
                         }
@@ -1092,6 +1212,7 @@ export default function RaffleAdmin() {
                       </button>
 
                       <button
+                        type="button"
                         onClick={() => {
                           setManualResult(null);
                           setManualError('');
