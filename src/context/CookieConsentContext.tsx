@@ -1,4 +1,4 @@
-﻿import React, { createContext, useContext, useEffect, useState, useMemo, useCallback } from 'react';
+import React, { createContext, useContext, useEffect, useState, useMemo, useCallback } from 'react';
 
 export interface CookiePreferences {
   essential: true;
@@ -26,7 +26,7 @@ const STORAGE_KEY = 'nfcs-cookie-consent';
 
 const CookieConsentContext = createContext<CookieConsentContextValue | null>(null);
 
-export function CookieConsentProvider({ children }: { children: React.ReactNode }) {
+export function CookieConsentProvider({ children }: { children?: React.ReactNode }) {
   const [preferences, setPreferences] = useState<CookiePreferences | null>(() => {
     if (typeof window === 'undefined') return null;
     try {

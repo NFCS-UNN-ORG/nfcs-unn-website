@@ -3,7 +3,7 @@ import { cn } from '../../lib/utils';
 import {
   motion,
   useAnimationControls,
-  ValueAnimationTransition,
+  Transition,
 } from 'framer-motion';
 
 interface ComesInGoesOutUnderlineProps {
@@ -45,7 +45,7 @@ interface ComesInGoesOutUnderlineProps {
    * Animation transition configuration
    * @default { duration: 0.4, ease: "easeInOut" }
    */
-  transition?: ValueAnimationTransition;
+  transition?: Transition;
   [key: string]: any;
 }
 
@@ -58,7 +58,7 @@ export const ComesInGoesOutUnderline: React.FC<ComesInGoesOutUnderlineProps> = (
   underlinePaddingRatio = 0.01,
   transition = {
     duration: 0.4,
-    ease: 'easeInOut',
+    ease: 'easeInOut' as const,
   },
   ...props
 }) => {
