@@ -360,7 +360,7 @@ export default function RaffleAdmin() {
     setDiagnosticsLoading(true);
     setDiagnosticsModalOpen(true);
     try {
-      const res = await fetch(`/api/admin-email-diagnostics?secret=${encodeURIComponent(secret)}`, {
+      const res = await fetch(`/api/resend-ticket-email?secret=${encodeURIComponent(secret)}`, {
         headers: {
           'x-admin-secret': secret,
         },

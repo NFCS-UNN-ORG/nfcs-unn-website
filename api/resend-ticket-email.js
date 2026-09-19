@@ -1,6 +1,7 @@
-// POST /api/resend-ticket-email
-// Header: x-admin-secret: <ADMIN_SECRET>
-// Body: { order_id, custom_email }
+// GET or POST /api/resend-ticket-email
+// GET: Email diagnostics & Resend health check
+// POST: Resend official tickets to buyer
+// Header: x-admin-secret: <ADMIN_SECRET> or Query: ?secret=<ADMIN_SECRET>
 
 import { createClient } from '@supabase/supabase-js';
 
@@ -14,15 +15,67 @@ function getSupabase() {
 }
 
 export default async function handler(req, res) {
-  if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Method not allowed' });
-  }
-
-  // Admin secret check (trimmed & unquoted to avoid subtle whitespace/quote issues)
-  const clientSecret = (req.headers['x-admin-secret'] || '').trim().replace(/^["']|["']$/g, '');
+  // Admin secret check (flexible to header or query, trimmed & unquoted)
+  const headerSecret = req.headers['x-admin-secret'] || '';
+  const querySecret = req.query?.secret || '';
+  const clientSecret = (headerSecret || querySecret).trim().replace(/^["']|["']$/g, '');
   const serverSecret = (process.env.ADMIN_SECRET || '').trim().replace(/^["']|["']$/g, '');
+
   if (!clientSecret || !serverSecret || clientSecret !== serverSecret) {
     return res.status(401).json({ error: 'Unauthorized: Invalid Admin Secret' });
+  }
+
+  const rawKey = process.env.RESEND_API_KEY || '';
+  const apiKey = rawKey.trim().replace(/^["']|["']$/g, '');
+  const rawFrom = process.env.RESEND_FROM_EMAIL || 'tickets@resend.dev';
+  const fromEmail = rawFrom.trim().replace(/^["']|["']$/g, '');
+
+  // -------------------------------------------------------------
+  // GET: System Health & Resend Diagnostics
+  // -------------------------------------------------------------
+  if (req.method === 'GET') {
+    const diagnostics = {
+      resend_api_key_configured: !!apiKey,
+      resend_api_key_preview: apiKey ? `${apiKey.slice(0, 7)}...${apiKey.slice(-4)}` : null,
+      resend_from_email: fromEmail,
+      resend_domain_mode: fromEmail && !fromEmail.includes('resend.dev') ? 'CUSTOM_DOMAIN' : 'TEST_SANDBOX_RESEND_DEV',
+    };
+
+    if (!apiKey) {
+      return res.status(200).json({
+        status: 'ERROR_NO_API_KEY',
+        message: 'RESEND_API_KEY is not configured in Vercel environment variables.',
+        diagnostics,
+      });
+    }
+
+    try {
+      const domainRes = await fetch('https://api.resend.com/domains', {
+        headers: { Authorization: `Bearer ${apiKey}` },
+      });
+      const domainData = await domainRes.json().catch(() => ({}));
+
+      diagnostics.resend_domains_http_status = domainRes.status;
+      diagnostics.resend_domains_response = domainData;
+
+      return res.status(200).json({
+        status: domainRes.ok ? 'KEY_VALID' : 'KEY_OR_DOMAIN_ERROR',
+        diagnostics,
+      });
+    } catch (err) {
+      return res.status(500).json({
+        status: 'EXCEPTION',
+        error: err.message,
+        diagnostics,
+      });
+    }
+  }
+
+  // -------------------------------------------------------------
+  // POST: Resend Official Ticket Email for an Order
+  // -------------------------------------------------------------
+  if (req.method !== 'POST') {
+    return res.status(405).json({ error: 'Method not allowed' });
   }
 
   const { order_id, custom_email } = req.body || {};
@@ -54,8 +107,6 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: 'No tickets are associated with this order' });
     }
 
-    const rawKey = process.env.RESEND_API_KEY || '';
-    const apiKey = rawKey.trim().replace(/^["']|["']$/g, '');
     if (!apiKey) {
       return res.status(500).json({
         error: 'RESEND_API_KEY is not configured in Vercel environment variables'
@@ -117,9 +168,6 @@ export default async function handler(req, res) {
         </p>
       </div>
     `;
-
-    const rawFrom = process.env.RESEND_FROM_EMAIL || 'tickets@resend.dev';
-    const fromEmail = rawFrom.trim().replace(/^["']|["']$/g, '');
 
     const emailRes = await fetch('https://api.resend.com/emails', {
       method: 'POST',
