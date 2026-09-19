@@ -1,13 +1,15 @@
 import React from 'react';
 import { PageTab } from '../../types';
-import { MapPin, Phone, Mail } from 'lucide-react';
+import { MapPin, Phone, Mail, Cookie } from 'lucide-react';
 import { SITE_INFO } from '../../data/nfcsData';
+import { useCookieConsent } from '../../context/CookieConsentContext';
 
 interface FooterLinksProps {
   onNavigate: (tab: PageTab) => void;
 }
 
 export const FooterLinks: React.FC<FooterLinksProps> = ({ onNavigate }) => {
+  const { openModal } = useCookieConsent();
   return (
     <>
       {/* Column 2: Quick Links */}
@@ -69,6 +71,12 @@ export const FooterLinks: React.FC<FooterLinksProps> = ({ onNavigate }) => {
           <li>
             <button onClick={() => onNavigate('faq')} className="hover:text-white transition-colors cursor-pointer">
               FAQ & Help Center
+            </button>
+          </li>
+          <li>
+            <button onClick={openModal} className="hover:text-white transition-colors cursor-pointer flex items-center gap-1.5">
+              <Cookie className="w-3.5 h-3.5 text-amber-400" />
+              <span>Cookie Preferences</span>
             </button>
           </li>
         </ul>

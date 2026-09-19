@@ -30,14 +30,14 @@ const MAIN_NAV_PAGES: { tab: PageTab; label: string }[] = [
   { tab: 'contact', label: 'Contact' },
 ];
 
-// Stagger entrance variants: appears at the end of the hero text animation (~2.15s) from the right
+// Stagger entrance variants: appears smoothly alongside hero text
 const containerVariants = {
   hidden: { opacity: 0 },
   visible: {
     opacity: 1,
     transition: {
-      delayChildren: 2.15,
-      staggerChildren: 0.12,
+      delayChildren: 1.0,
+      staggerChildren: 0.1,
     },
   },
 };

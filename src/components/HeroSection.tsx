@@ -10,7 +10,7 @@ interface HeroSectionProps {
 }
 
 export const HeroSection: React.FC<HeroSectionProps> = ({ onNavigate, isModelReady = true }) => {
-  const fullHeadline = 'Building A Strong Catholic Community At UNN';
+  const fullHeadline = 'Building A Strong Catholic Community In UNN';
   const [displayedHeadline, setDisplayedHeadline] = useState('');
 
   useEffect(() => {
@@ -38,41 +38,41 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ onNavigate, isModelRea
         {/* Restructured Editorial Hero Layout with tighter spacing, 5vw left padding */}
         <div className="max-w-3xl pt-[7vh] pl-[5vw] space-y-3.5 text-left">
 
-          {/* 'Living the Faith.' with 600 weight, 12% size increase, and small period */}
+          {/* 'Living the Faith.' in Cormorant Garamond font-[650] with small amber period */}
           <motion.div
             initial={{ opacity: 0, y: 14 }}
             animate={isModelReady ? { opacity: 1, y: 0 } : { opacity: 0, y: 14 }}
-            transition={{ duration: 0.8, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
-            className="text-2xl sm:text-[1.75rem] lg:text-[2.1rem] font-semibold text-slate-200 tracking-wide leading-none"
+            transition={{ duration: 0.8, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
+            className="text-2xl sm:text-[1.75rem] lg:text-[2.1rem] font-cormorant font-[650] text-slate-100 tracking-wide leading-none"
           >
             Living the Faith<span className="text-amber-400">.</span>
           </motion.div>
 
-          {/* Large Editorial Headline with reduced weight (font-thin 100) */}
+          {/* Large Editorial Headline in Cormorant Garamond Serif */}
           <motion.h1
             initial={{ opacity: 0, y: 18 }}
             animate={isModelReady ? { opacity: 1, y: 0 } : { opacity: 0, y: 18 }}
-            transition={{ duration: 0.9, delay: 0.35, ease: [0.16, 1, 0.3, 1] }}
-            className="text-4xl sm:text-6xl lg:text-7xl font-thin tracking-tight text-white leading-[1.04] min-h-[2.1em] sm:min-h-[1.95em]"
+            transition={{ duration: 0.9, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
+            className="text-4xl sm:text-6xl lg:text-7xl font-cormorant font-light tracking-tight text-white leading-[1.08] min-h-[2.1em] sm:min-h-[1.95em]"
           >
-            <span className="font-thin text-white" style={{ fontWeight: 100 }}>
+            <span className="font-cormorant font-light text-white">
               {displayedHeadline}
             </span>
             <motion.span
               animate={{ opacity: [1, 0, 1] }}
               transition={{ duration: 0.8, repeat: Infinity, ease: 'linear' }}
-              className="inline-block text-amber-400 font-normal ml-0.5 select-none"
+              className="inline-block text-amber-400 font-light ml-0.5 select-none"
             >
               _
             </motion.span>
           </motion.h1>
 
-          {/* Specified Subtext with 10% heavier weight (font-normal text-slate-200) and brotherhood */}
+          {/* Subtext in Inter (Sans-Serif Body) */}
           <motion.p
             initial={{ opacity: 0, y: 16 }}
             animate={isModelReady ? { opacity: 1, y: 0 } : { opacity: 0, y: 16 }}
-            transition={{ duration: 0.9, delay: 0.55, ease: [0.16, 1, 0.3, 1] }}
-            className="text-slate-200 text-base sm:text-lg lg:text-xl leading-normal font-normal max-w-2xl pt-0.5"
+            transition={{ duration: 0.9, delay: 0.35, ease: [0.16, 1, 0.3, 1] }}
+            className="text-slate-200 font-sans text-base sm:text-lg lg:text-xl leading-relaxed font-normal max-w-2xl pt-1"
           >
             Growing together in prayer, academic excellence, leadership, and lifelong Catholic brotherhood.
           </motion.p>
@@ -81,7 +81,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ onNavigate, isModelRea
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={isModelReady ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
-            transition={{ duration: 1.0, delay: 0.85, ease: [0.16, 1, 0.3, 1] }}
+            transition={{ duration: 1.0, delay: 0.5, ease: [0.16, 1, 0.3, 1] }}
             className="flex flex-wrap items-center gap-4 pt-4"
           >
             <a

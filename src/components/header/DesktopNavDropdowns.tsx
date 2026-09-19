@@ -50,7 +50,7 @@ export const DesktopNavDropdowns: React.FC<DesktopNavDropdownsProps> = ({
         onMouseLeave={() => setHoveredKey(null)}
         onClick={() => setActiveTab('home')}
         isActive={activeTab === 'home'}
-        icon={<Home className="w-4 h-4 text-[#4D2EAB] dark:text-indigo-400" />}
+        icon={<Home className="w-4 h-4 text-current" />}
       >
         Home
       </NavItem>
@@ -63,7 +63,7 @@ export const DesktopNavDropdowns: React.FC<DesktopNavDropdownsProps> = ({
         onMouseLeave={() => setHoveredKey(null)}
         onClick={() => setActiveTab('about')}
         isActive={activeTab === 'about'}
-        icon={<Info className="w-4 h-4 text-[#4D2EAB] dark:text-indigo-400" />}
+        icon={<Info className="w-4 h-4 text-current" />}
       >
         About Us
       </NavItem>
@@ -86,7 +86,7 @@ export const DesktopNavDropdowns: React.FC<DesktopNavDropdownsProps> = ({
           onMouseEnter={setHoveredKey}
           onMouseLeave={() => setHoveredKey(null)}
           isActive={isStructureActive}
-          icon={<Shield className="w-4 h-4 text-[#4D2EAB] dark:text-indigo-400" />}
+          icon={<Shield className="w-4 h-4 text-current" />}
         >
           <span className="flex items-center gap-1">
             Structure
@@ -152,7 +152,7 @@ export const DesktopNavDropdowns: React.FC<DesktopNavDropdownsProps> = ({
           onMouseEnter={setHoveredKey}
           onMouseLeave={() => setHoveredKey(null)}
           isActive={isHighlightsActive}
-          icon={<Sparkles className="w-4 h-4 text-[#4D2EAB] dark:text-indigo-400" />}
+          icon={<Sparkles className="w-4 h-4 text-current" />}
         >
           <span className="flex items-center gap-1">
             Highlights
@@ -218,7 +218,7 @@ export const DesktopNavDropdowns: React.FC<DesktopNavDropdownsProps> = ({
           onMouseEnter={setHoveredKey}
           onMouseLeave={() => setHoveredKey(null)}
           isActive={isResourcesActive}
-          icon={<FolderOpen className="w-4 h-4 text-[#4D2EAB] dark:text-indigo-400" />}
+          icon={<FolderOpen className="w-4 h-4 text-current" />}
         >
           <span className="flex items-center gap-1">
             Resources
@@ -274,7 +274,7 @@ export const DesktopNavDropdowns: React.FC<DesktopNavDropdownsProps> = ({
         onMouseLeave={() => setHoveredKey(null)}
         onClick={() => setActiveTab('contact')}
         isActive={activeTab === 'contact'}
-        icon={<Phone className="w-4 h-4 text-[#4D2EAB] dark:text-indigo-400" />}
+        icon={<Phone className="w-4 h-4 text-current" />}
       >
         Contact Us
       </NavItem>

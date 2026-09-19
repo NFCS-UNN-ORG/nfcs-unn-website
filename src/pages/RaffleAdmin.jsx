@@ -48,6 +48,11 @@ export default function RaffleAdmin() {
   const [channelFilter, setChannelFilter] = useState('all'); // 'all' | 'online' | 'walk-in'
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [syncFeedback, setSyncFeedback] = useState(null);
+  const [floatingToast, setFloatingToast] = useState(null);
+  const [emailModalData, setEmailModalData] = useState(null);
+  const [diagnosticsModalOpen, setDiagnosticsModalOpen] = useState(false);
+  const [diagnosticsData, setDiagnosticsData] = useState(null);
+  const [diagnosticsLoading, setDiagnosticsLoading] = useState(false);
   const [copiedTicket, setCopiedTicket] = useState('');
   const [resendingOrderId, setResendingOrderId] = useState(null);
   const [unlocking, setUnlocking] = useState(false);
@@ -302,11 +307,11 @@ export default function RaffleAdmin() {
 
   const handleResendEmail = async (order) => {
     if (!order.buyer_email) {
-      setSyncFeedback({
+      setFloatingToast({
         type: 'error',
         message: `Cannot send email: No email address recorded for ${order.buyer_name}.`,
       });
-      setTimeout(() => setSyncFeedback(null), 6000);
+      setTimeout(() => setFloatingToast(null), 6000);
       return;
     }
 
@@ -322,24 +327,50 @@ export default function RaffleAdmin() {
       });
       const data = await res.json();
       if (!res.ok) {
-        setSyncFeedback({
+        setEmailModalData({
+          order,
+          error: data.error || 'Server error',
+        });
+        setFloatingToast({
           type: 'error',
-          message: `Email delivery failed: ${data.error || 'Server error'}`,
+          message: `Email failed: ${data.error || 'Server error'}`,
         });
       } else {
-        setSyncFeedback({
+        setFloatingToast({
           type: 'success',
           message: `Tickets successfully emailed to ${order.buyer_email}!`,
         });
       }
     } catch (err) {
-      setSyncFeedback({
+      setEmailModalData({
+        order,
+        error: `Network error: ${err.message}`,
+      });
+      setFloatingToast({
         type: 'error',
         message: 'Network error trying to contact the email server.',
       });
     } finally {
       setResendingOrderId(null);
-      setTimeout(() => setSyncFeedback(null), 7000);
+      setTimeout(() => setFloatingToast(null), 8000);
+    }
+  };
+
+  const fetchDiagnostics = async () => {
+    setDiagnosticsLoading(true);
+    setDiagnosticsModalOpen(true);
+    try {
+      const res = await fetch(`/api/admin-email-diagnostics?secret=${encodeURIComponent(secret)}`, {
+        headers: {
+          'x-admin-secret': secret,
+        },
+      });
+      const data = await res.json();
+      setDiagnosticsData(data);
+    } catch (err) {
+      setDiagnosticsData({ error: err.message });
+    } finally {
+      setDiagnosticsLoading(false);
     }
   };
 
@@ -673,6 +704,21 @@ export default function RaffleAdmin() {
             >
               <Download className="w-4 h-4 text-stone-500" />
               <span>Export CSV</span>
+            </button>
+
+            {/* Email Diagnostics */}
+            <button
+              onClick={fetchDiagnostics}
+              disabled={diagnosticsLoading}
+              className="flex items-center gap-2 bg-stone-100 hover:bg-stone-200 text-stone-700 font-bold text-xs px-3.5 py-2.5 rounded-xl border border-stone-300/80 shadow-xs transition-all active:scale-95 cursor-pointer disabled:opacity-50"
+              title="Test and diagnose Resend email system and domain health"
+            >
+              {diagnosticsLoading ? (
+                <Loader2 className="w-4 h-4 animate-spin text-stone-500" />
+              ) : (
+                <Mail className="w-4 h-4 text-stone-500" />
+              )}
+              <span>Email Health</span>
             </button>
 
             {/* Logout Lock */}
@@ -1497,6 +1543,196 @@ export default function RaffleAdmin() {
                     </div>
                   </form>
                 )}
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* Floating Toast Notification (Always in view) */}
+      <AnimatePresence>
+        {floatingToast && (
+          <motion.div
+            initial={{ opacity: 0, y: 20, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 20, scale: 0.95 }}
+            className={`fixed bottom-6 right-6 z-50 p-4 rounded-2xl shadow-2xl border text-xs font-bold flex items-center gap-3 max-w-md ${
+              floatingToast.type === 'success'
+                ? 'bg-[#166C16] text-white border-emerald-500'
+                : 'bg-red-950 text-white border-red-800'
+            }`}
+          >
+            {floatingToast.type === 'success' ? (
+              <CheckCircle2 className="w-5 h-5 text-[#FBE202] shrink-0" />
+            ) : (
+              <AlertCircle className="w-5 h-5 text-red-400 shrink-0" />
+            )}
+            <span className="flex-1">{floatingToast.message}</span>
+            <button
+              onClick={() => setFloatingToast(null)}
+              className="p-1 hover:bg-white/20 rounded-lg text-white/80 transition-colors cursor-pointer"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Email Failure / WhatsApp Fallback Modal */}
+      <AnimatePresence>
+        {emailModalData && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 select-none">
+            <div
+              onClick={() => setEmailModalData(null)}
+              className="absolute inset-0 bg-stone-900/60 backdrop-blur-sm"
+            />
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              className="relative bg-white rounded-3xl p-6 max-w-md w-full shadow-2xl border border-stone-200 z-10 space-y-4"
+            >
+              <div className="flex items-center gap-3">
+                <div className="size-11 rounded-2xl bg-red-100 text-red-600 flex items-center justify-center font-black">
+                  <AlertCircle className="w-6 h-6" />
+                </div>
+                <div>
+                  <h3 className="text-base font-black text-stone-900">Email Delivery Issue</h3>
+                  <p className="text-xs text-stone-500">Failed to send to {emailModalData.order?.buyer_email}</p>
+                </div>
+              </div>
+
+              <div className="p-3.5 bg-red-50 rounded-2xl border border-red-200 text-xs font-mono text-red-800 break-words max-h-36 overflow-y-auto">
+                {emailModalData.error}
+              </div>
+
+              <p className="text-xs text-stone-600">
+                You can immediately dispatch their verified tickets directly to their phone via WhatsApp in one click:
+              </p>
+
+              <div className="flex flex-col gap-2 pt-1">
+                <button
+                  type="button"
+                  onClick={() => {
+                    handleOpenWhatsApp(emailModalData.order);
+                    setEmailModalData(null);
+                  }}
+                  className="w-full py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer"
+                >
+                  <MessageCircle className="w-4 h-4" />
+                  <span>Send Tickets via WhatsApp</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setEmailModalData(null)}
+                  className="w-full py-2.5 bg-stone-100 hover:bg-stone-200 text-stone-700 font-bold text-xs rounded-xl transition-all cursor-pointer"
+                >
+                  Close
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* Email Diagnostics Modal */}
+      <AnimatePresence>
+        {diagnosticsModalOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 select-none">
+            <div
+              onClick={() => setDiagnosticsModalOpen(false)}
+              className="absolute inset-0 bg-stone-900/60 backdrop-blur-sm"
+            />
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              className="relative bg-white rounded-3xl p-6 max-w-lg w-full shadow-2xl border border-stone-200 z-10 space-y-4 max-h-[85vh] flex flex-col"
+            >
+              <div className="flex items-center justify-between border-b border-stone-100 pb-3">
+                <div className="flex items-center gap-2.5">
+                  <div className="size-9 rounded-xl bg-blue-100 text-blue-700 flex items-center justify-center font-bold">
+                    <Mail className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h3 className="text-base font-black text-stone-900">Email System Health</h3>
+                    <p className="text-xs text-stone-400">Resend API & Domain Diagnostics</p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setDiagnosticsModalOpen(false)}
+                  className="p-1 text-stone-400 hover:text-stone-700 rounded-lg cursor-pointer"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              <div className="overflow-y-auto space-y-3 flex-1 pr-1">
+                {diagnosticsLoading ? (
+                  <div className="py-12 text-center space-y-2">
+                    <Loader2 className="w-8 h-8 animate-spin mx-auto text-blue-600" />
+                    <p className="text-xs text-stone-500 font-bold">Testing Resend connectivity…</p>
+                  </div>
+                ) : diagnosticsData ? (
+                  <div className="space-y-3 text-xs">
+                    <div className="p-3 bg-stone-50 rounded-xl border border-stone-200 space-y-1.5">
+                      <div className="flex justify-between">
+                        <span className="font-bold text-stone-600">Status:</span>
+                        <span className="font-mono font-bold text-stone-900">{diagnosticsData.status || 'UNKNOWN'}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="font-bold text-stone-600">Resend API Key:</span>
+                        <span className={`font-mono font-bold ${diagnosticsData.diagnostics?.resend_api_key_configured ? 'text-emerald-700' : 'text-red-600'}`}>
+                          {diagnosticsData.diagnostics?.resend_api_key_configured ? `Active (${diagnosticsData.diagnostics?.resend_api_key_preview})` : 'MISSING IN VERCEL'}
+                        </span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="font-bold text-stone-600">Sender Address:</span>
+                        <span className="font-mono font-bold text-stone-900">{diagnosticsData.diagnostics?.resend_from_email}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="font-bold text-stone-600">Sender Mode:</span>
+                        <span className={`font-mono font-bold ${diagnosticsData.diagnostics?.resend_domain_mode === 'CUSTOM_DOMAIN' ? 'text-emerald-700' : 'text-amber-700'}`}>
+                          {diagnosticsData.diagnostics?.resend_domain_mode}
+                        </span>
+                      </div>
+                    </div>
+
+                    {diagnosticsData.diagnostics?.resend_domains_response && (
+                      <div className="p-3 bg-stone-50 rounded-xl border border-stone-200 space-y-1">
+                        <span className="font-bold text-stone-700 block">Resend Domains API Response:</span>
+                        <pre className="p-2 bg-stone-900 text-emerald-400 font-mono text-[10px] rounded-lg overflow-x-auto">
+                          {JSON.stringify(diagnosticsData.diagnostics?.resend_domains_response, null, 2)}
+                        </pre>
+                      </div>
+                    )}
+
+                    {diagnosticsData.diagnostics?.resend_domain_mode === 'TEST_SANDBOX_RESEND_DEV' && (
+                      <div className="p-3 bg-amber-50 rounded-xl border border-amber-200 text-amber-900 text-xs space-y-1">
+                        <span className="font-black block">⚠️ Test Sandbox Mode Active:</span>
+                        <p>
+                          Because <code>RESEND_FROM_EMAIL</code> is using <code>resend.dev</code>, Resend <strong>only allows sending to the Resend account owner's email</strong>. External buyers will fail with HTTP 403.
+                        </p>
+                        <p className="font-semibold">
+                          To fix: Add and verify your domain at <strong>resend.com/domains</strong> and set <code>RESEND_FROM_EMAIL=tickets@yourdomain.com</code> in Vercel.
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <p className="text-xs text-stone-400 text-center py-6">No diagnostic data available</p>
+                )}
+              </div>
+
+              <div className="pt-2 border-t border-stone-100 flex justify-end">
+                <button
+                  type="button"
+                  onClick={() => setDiagnosticsModalOpen(false)}
+                  className="px-4 py-2 bg-stone-100 hover:bg-stone-200 text-stone-700 text-xs font-bold rounded-xl cursor-pointer"
+                >
+                  Close
+                </button>
               </div>
             </motion.div>
           </div>

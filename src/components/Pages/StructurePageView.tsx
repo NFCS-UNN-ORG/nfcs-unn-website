@@ -34,9 +34,9 @@ export const StructurePageView: React.FC<StructurePageViewProps> = ({ initialSub
   ];
 
   return (
-    <div className="bg-stone-50 dark:bg-[#080A26] min-h-screen pb-12">
+    <div className="bg-transparent min-h-screen pb-12">
       {/* Sub-navigation pill bar */}
-      <div className="bg-white dark:bg-slate-900 border-b border-stone-200 dark:border-slate-800 sticky top-16 z-30 shadow-xs">
+      <div className="bg-white/85 dark:bg-slate-900/85 backdrop-blur-md border-b border-stone-200/80 dark:border-slate-800/80 sticky top-16 z-30 shadow-xs">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
           <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-1">
             {subItems.map((item) => (

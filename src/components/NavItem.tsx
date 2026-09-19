@@ -32,26 +32,38 @@ export const NavItem: React.FC<NavItemProps> = ({
       onMouseLeave={onMouseLeave}
       className={`relative px-3.5 py-2 text-xs sm:text-sm font-semibold transition-all duration-200 cursor-pointer rounded-lg whitespace-nowrap ${
         isActive
-          ? "text-[#4D2EAB] dark:text-indigo-400 font-extrabold"
+          ? "text-amber-400 dark:text-amber-400 font-extrabold"
           : isHovered
             ? "text-[#4D2EAB] dark:text-indigo-400"
             : "text-stone-700 dark:text-slate-100 hover:text-[#4D2EAB] dark:hover:text-indigo-400"
       }`}
     >
       <span className="relative z-10 flex items-center gap-1.5">
-        {/* Animated Icon reveal on Hover or Active */}
-        <AnimatePresence initial={false}>
-          {(isHovered || isActive) && icon && (
+        {/* Active link always displays icon; other links display icon on hover with fade-in-down */}
+        <AnimatePresence>
+          {isActive && icon ? (
             <motion.span
-              initial={{ width: 0, opacity: 0, scale: 0.5 }}
-              animate={{ width: "auto", opacity: 1, scale: 1 }}
-              exit={{ width: 0, opacity: 0, scale: 0.5 }}
+              key="active-icon"
+              initial={{ opacity: 0, y: -8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -6 }}
               transition={{ duration: 0.2, ease: "easeOut" }}
-              className="inline-flex items-center overflow-hidden"
+              className="inline-flex items-center text-amber-400 dark:text-amber-400"
             >
               {icon}
             </motion.span>
-          )}
+          ) : isHovered && icon ? (
+            <motion.span
+              key="hover-icon"
+              initial={{ opacity: 0, y: -8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -6 }}
+              transition={{ duration: 0.2, ease: "easeOut" }}
+              className="inline-flex items-center text-current"
+            >
+              {icon}
+            </motion.span>
+          ) : null}
         </AnimatePresence>
         <span>{children}</span>
       </span>
@@ -65,11 +77,11 @@ export const NavItem: React.FC<NavItemProps> = ({
         />
       )}
 
-      {/* Active Tab Underline */}
+      {/* Active Tab Underline in Yellow Accent Color */}
       {isActive && (
         <motion.span
           layoutId="nav-active-underline"
-          className="absolute bottom-0 left-2 right-2 h-[3px] rounded-full bg-[#4D2EAB] dark:bg-indigo-400"
+          className="absolute bottom-0 left-2 right-2 h-[3px] rounded-full bg-amber-400 dark:bg-amber-400"
           transition={{ type: "spring", stiffness: 350, damping: 30 }}
         />
       )}

@@ -65,7 +65,7 @@ export const ContactPageView: React.FC<ContactPageViewProps> = () => {
   };
 
   return (
-    <div className="bg-stone-50 dark:bg-[#080A26] min-h-screen py-8 sm:py-14 space-y-16">
+    <div className="bg-transparent min-h-screen py-8 sm:py-14 space-y-16">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-16">
         {/* Header Hero */}
         <div className="text-center max-w-3xl mx-auto space-y-4">

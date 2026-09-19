@@ -463,13 +463,16 @@ export default async function handler(req, res) {
         if (emailRes.ok) {
           emailSent = true;
         } else {
-          emailError = resData.message || JSON.stringify(resData);
-          console.warn('Resend email error:', resData);
+          emailError = `Resend (${emailRes.status}): ${resData.message || JSON.stringify(resData)}`;
+          console.warn('Resend email error in verify-paystack:', emailRes.status, resData);
         }
       } catch (err) {
-        emailError = err.message;
-        console.warn('Resend email exception:', err);
+        emailError = `Resend exception: ${err.message}`;
+        console.warn('Resend email exception in verify-paystack:', err);
       }
+    } else if (!process.env.RESEND_API_KEY) {
+      emailError = 'RESEND_API_KEY not configured in Vercel settings';
+      console.warn('verify-paystack: RESEND_API_KEY missing in environment variables.');
     }
 
     // 6. Process Referral Milestones in background (10 tickets referred = 1 free ticket)

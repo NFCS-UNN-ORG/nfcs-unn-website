@@ -1,8 +1,12 @@
 import React, { useState } from 'react';
 import { PageTab } from './types';
 import { ThemeProvider } from './context/ThemeContext';
+import { CookieConsentProvider } from './context/CookieConsentContext';
+import { CookieConsentBanner } from './components/ui/CookieConsentBanner';
+import { CookiePreferencesModal } from './components/ui/CookiePreferencesModal';
 import { Header } from './components/Header';
 import { Footer } from './components/Footer';
+import { ChurchHero3D } from './components/ChurchHero3D';
 import { HomePageView } from './components/Pages/HomePageView';
 import { AboutPageView } from './components/Pages/AboutPageView';
 import { InitiativesPageView } from './components/Pages/InitiativesPageView';
@@ -94,7 +98,15 @@ export default function App() {
     currentPath === '/raffle' ||
     currentPath.startsWith('/raffle/')
   ) {
-    return <RaffleTicketPurchase />;
+    return (
+      <ThemeProvider>
+        <CookieConsentProvider>
+          <RaffleTicketPurchase />
+          <CookieConsentBanner />
+          <CookiePreferencesModal />
+        </CookieConsentProvider>
+      </ThemeProvider>
+    );
   }
 
   const handleNavigate = (tab: PageTab) => {
@@ -116,59 +128,100 @@ export default function App() {
     'alumni',
   ].includes(activeTab);
 
+  const scrollProgressRef = React.useRef<number>(0);
+  const [isModelReady, setIsModelReady] = useState(false);
+
+  // Dynamic scroll progress calculation for 3D camera pan/zoom
+  React.useEffect(() => {
+    const handleScroll = () => {
+      const scrollY = window.scrollY;
+      const maxScroll = Math.max(document.documentElement.scrollHeight - window.innerHeight, 1);
+      scrollProgressRef.current = Math.min(Math.max(scrollY / maxScroll, 0), 1);
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    handleScroll();
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
   return (
     <ThemeProvider>
-      <div className="min-h-screen bg-white dark:bg-[#080A26] font-sans text-stone-900 dark:text-slate-100 selection:bg-indigo-200 selection:text-indigo-900 flex flex-col justify-between antialiased transition-colors duration-400">
-        <div>
-          <Header
-            activeTab={activeTab}
-            setActiveTab={handleNavigate}
-          />
+      <CookieConsentProvider>
+        {/* Global 3D Church Model background across all pages */}
+        <ChurchHero3D
+          scrollProgressRef={scrollProgressRef}
+          activeTab={activeTab}
+          onLoaded={() => setIsModelReady(true)}
+        />
 
-          <main>
-            {activeTab === 'home' && (
-              <HomePageView
-                onNavigate={handleNavigate}
-              />
-            )}
+        {/* Dark backdrop (#0001) and 10px blur in front of 3D model */}
+        <div
+          className="fixed inset-0 z-[1] pointer-events-none bg-[#0001] backdrop-blur-[10px]"
+          style={{
+            backgroundColor: '#0001',
+            backdropFilter: 'blur(10px)',
+            WebkitBackdropFilter: 'blur(10px)',
+          }}
+          aria-hidden="true"
+        />
 
-            {activeTab === 'about' && <AboutPageView />}
+        <div className="min-h-screen bg-transparent font-sans text-stone-900 dark:text-slate-100 selection:bg-indigo-200 selection:text-indigo-900 flex flex-col justify-between antialiased transition-colors duration-400 relative z-10">
+          <div>
+            <Header
+              activeTab={activeTab}
+              setActiveTab={handleNavigate}
+            />
 
-            {isStructureTab && (
-              <StructurePageView
-                initialSubTab={activeTab === 'structure' ? 'mass-confession' : activeTab}
-                onNavigate={handleNavigate}
-              />
-            )}
+            <main>
+              {activeTab === 'home' && (
+                <HomePageView
+                  onNavigate={handleNavigate}
+                  isModelReady={isModelReady}
+                />
+              )}
 
-            {activeTab === 'initiatives' && <InitiativesPageView />}
+              {activeTab === 'about' && <AboutPageView />}
 
-            {activeTab === 'donations' && <DonationsPageView />}
+              {isStructureTab && (
+                <StructurePageView
+                  initialSubTab={activeTab === 'structure' ? 'mass-confession' : activeTab}
+                  onNavigate={handleNavigate}
+                />
+              )}
 
-            {activeTab === 'get-involved' && <GetInvolvedPageView onNavigate={handleNavigate} />}
+              {activeTab === 'initiatives' && <InitiativesPageView />}
 
-            {activeTab === 'blog' && <BlogPageView />}
+              {activeTab === 'donations' && <DonationsPageView />}
 
-            {activeTab === 'calendar' && <CalendarView />}
+              {activeTab === 'get-involved' && <GetInvolvedPageView onNavigate={handleNavigate} />}
 
-            {activeTab === 'success-stories' && <SuccessStoriesPageView onNavigate={handleNavigate} />}
+              {activeTab === 'blog' && <BlogPageView />}
 
-            {activeTab === 'faq' && <FaqPageView onNavigate={handleNavigate} />}
+              {activeTab === 'calendar' && <CalendarView />}
 
-            {activeTab === 'gallery' && <GalleryPageView onNavigate={handleNavigate} />}
+              {activeTab === 'success-stories' && <SuccessStoriesPageView onNavigate={handleNavigate} />}
 
-            {activeTab === 'contact' && <ContactPageView onNavigate={handleNavigate} />}
+              {activeTab === 'faq' && <FaqPageView onNavigate={handleNavigate} />}
 
-            {activeTab === 'events' && <EventsPageView onNavigate={handleNavigate} />}
-          </main>
+              {activeTab === 'gallery' && <GalleryPageView onNavigate={handleNavigate} />}
+
+              {activeTab === 'contact' && <ContactPageView onNavigate={handleNavigate} />}
+
+              {activeTab === 'events' && <EventsPageView onNavigate={handleNavigate} />}
+            </main>
+          </div>
+
+          {activeTab !== 'home' && (
+            <Footer
+              onNavigate={handleNavigate}
+            />
+          )}
         </div>
 
-        {activeTab !== 'home' && (
-          <Footer
-            onNavigate={handleNavigate}
-          />
-        )}
-      </div>
+        {/* Global Cookie Consent Components */}
+        <CookieConsentBanner />
+        <CookiePreferencesModal />
+      </CookieConsentProvider>
     </ThemeProvider>
   );
 }

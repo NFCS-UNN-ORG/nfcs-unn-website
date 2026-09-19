@@ -6,7 +6,7 @@ import { ExcoCard } from '../about/ExcoCard';
 
 export const AboutPageView: React.FC = () => {
   return (
-    <div className="bg-stone-50 dark:bg-[#080A26] min-h-screen py-10 sm:py-16 space-y-16">
+    <div className="bg-transparent min-h-screen py-10 sm:py-16 space-y-16">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-16">
         {/* Hero Section */}
         <AboutHero />

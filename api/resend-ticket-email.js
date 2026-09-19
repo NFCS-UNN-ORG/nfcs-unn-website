@@ -18,8 +18,10 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  // Admin secret check
-  if (req.headers['x-admin-secret'] !== process.env.ADMIN_SECRET) {
+  // Admin secret check (trimmed to avoid subtle whitespace/newline issues)
+  const clientSecret = (req.headers['x-admin-secret'] || '').trim();
+  const serverSecret = (process.env.ADMIN_SECRET || '').trim();
+  if (!clientSecret || !serverSecret || clientSecret !== serverSecret) {
     return res.status(401).json({ error: 'Unauthorized: Invalid Admin Secret' });
   }
 
@@ -133,8 +135,10 @@ export default async function handler(req, res) {
     const resData = await emailRes.json().catch(() => ({}));
 
     if (!emailRes.ok) {
+      console.warn('Resend email error:', emailRes.status, resData);
+      const errMsg = resData.message || (typeof resData === 'string' ? resData : JSON.stringify(resData)) || 'Resend error';
       return res.status(emailRes.status || 500).json({
-        error: resData.message || 'Resend API returned an error',
+        error: `Resend (HTTP ${emailRes.status}): ${errMsg}`,
         details: resData,
       });
     }
