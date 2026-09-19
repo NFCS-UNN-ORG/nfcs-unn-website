@@ -166,7 +166,7 @@ async function processReferralMilestones(supabase, rawPromoterPhone) {
                 ${chipsHtml}
               </div>
               <p style="font-size: 14px; color: #64748b;">
-                Every 10 tickets bought with your link earns you another free entry into the live draw on Sunday, 20th September 2026! Keep sharing!
+                Every 10 tickets bought with your link earns you another free entry into the live draw on Sunday, 27th September 2026! Keep sharing!
               </p>
             </div>
           `,
@@ -423,7 +423,7 @@ export default async function handler(req, res) {
 
              <div style="background: #FAF7F0; border-left: 4px solid #c9a227; padding: 16px; border-radius: 6px; margin: 24px 0;">
               <h3 style="margin: 0 0 6px; color: #16342a; font-size: 15px; font-weight: bold;">Grand Draw Information:</h3>
-              <p style="margin: 4px 0; font-size: 14px; color: #334155;">📅 <strong>Date:</strong> Sunday, 20th September 2026</p>
+              <p style="margin: 4px 0; font-size: 14px; color: #334155;">📅 <strong>Date:</strong> Sunday, 27th September 2026</p>
               <p style="margin: 4px 0; font-size: 14px; color: #334155;">⏰ <strong>Time:</strong> 1:00 PM </p>
               <p style="margin: 4px 0; font-size: 14px; color: #334155;">📍 <strong>Venue:</strong> St. Peter's Catholic Chaplaincy inside the Seat of Wisdom Hall</p>
             </div>

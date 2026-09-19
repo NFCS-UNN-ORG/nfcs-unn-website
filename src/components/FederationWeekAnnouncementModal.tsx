@@ -13,7 +13,7 @@ const SLIDES = [
     subtitle: 'Schedule of Activities',
     image: '/federation-week-flyer.jpg',
     alt: 'NFCS UNN Federation Week 2026 Schedule of Activities',
-    badge: 'Sept 13th – Sept 20th, 2026',
+    badge: 'Sept 13th – Sept 27th, 2026',
     badgeIcon: Calendar,
     tag: 'Event Schedule',
     themeColor: '#166C16',

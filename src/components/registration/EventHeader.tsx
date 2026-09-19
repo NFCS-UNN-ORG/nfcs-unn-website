@@ -15,8 +15,8 @@ interface EventHeaderProps {
 
 export const EventHeader: React.FC<EventHeaderProps> = React.memo(({
   title = 'NFCS UNN Federation Week 2026 Raffle Draw',
-  dateChip = { month: 'SEP', day: '20' },
-  dateText = 'Sunday, 20th September 2026',
+  dateChip = { month: 'SEP', day: '27' },
+  dateText = 'Sunday, 27th September 2026',
   timeText = '1:00 PM • Live on Campus Stage',
   locationTitle = "St. Peter's Catholic Chaplaincy, UNN",
   locationDetails = 'Main Auditorium Stage, University of Nigeria, Nsukka Campus',

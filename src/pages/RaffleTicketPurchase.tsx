@@ -663,7 +663,7 @@ export default function RaffleTicketPurchase() {
                     .
                   </p>
                   <p className="text-[11px] text-white/50 leading-relaxed">
-                    Please check your inbox to keep your numbers safe for the live draw on Sunday, 20th September 2026 at 1:00 PM.
+                    Please check your inbox to keep your numbers safe for the live draw on Sunday, 27th September 2026 at 1:00 PM.
                   </p>
                 </div>
 
@@ -673,14 +673,14 @@ export default function RaffleTicketPurchase() {
                   const referralLink = typeof window !== 'undefined'
                     ? `${window.location.origin}/raffle-draw?ref=${encodeURIComponent(promoterPhone)}`
                     : `https://nfcsunn.org/raffle-draw?ref=${encodeURIComponent(promoterPhone)}`;
-                  const shareText = `🎟️ Grab your Federation Week Raffle Ticket for ₦200 and stand a chance to win:\n🥇 1st: 5000mAh Powerbank + Airbuds\n🥈 2nd: 3kg Gas + 10kg Rice\n🥉 3rd: Pressing Iron\n\nBuy with my link here: ${referralLink}`;
+                  const shareText = `🎟️ WIN BIG AT NFCS UNN FEDERATION WEEK 2026! 🎁\n\nTickets are just ₦200! Every 10 tickets = 1 FREE Ticket automatically! 🚀\n\n🏆 Prizes to be won:\n• 5kg Gas Cylinder\n• 50,000mAh Fast-Charging Power Banks\n• Wireless Earbuds\n• 10kg Bags of Rice\n• Electric Iron\n\n🔗 Get your tickets here:\n${referralLink}\n\n📅 Grand Draw: Sunday, 27th September 2026 at 1:00 PM`;
                   const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(shareText)}`;
 
                   return (
                     <div className="p-5 sm:p-6 rounded-2xl bg-gradient-to-br from-[#166C16]/60 via-[#175319]/80 to-[#0A2610] border border-[#FBE202]/40 shadow-xl space-y-3.5 text-left relative overflow-hidden">
                       <div className="flex items-center justify-between">
                         <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#FBE202]/20 border border-[#FBE202]/50 text-[#FBE202] text-xs font-black uppercase tracking-wider">
-                          <span>🎁 Refer 10 Friends → Get 1 FREE Ticket</span>
+                          <span>🎁 Every 10 Tickets = 1 FREE Entry</span>
                         </div>
                       </div>
 
@@ -689,7 +689,7 @@ export default function RaffleTicketPurchase() {
                           Want more chances to win without paying?
                         </h4>
                         <p className="text-xs text-white/80 font-medium mt-1 leading-relaxed">
-                          Share your link with course mates & hostel friends. For every <strong>10 tickets</strong> bought through your link, you'll automatically receive an official <strong>FREE entry</strong> into the live draw!
+                          Share your link with course mates & friends. For every <strong>10 tickets</strong> bought through your link (even from one friend buying a pack!), you'll automatically receive an official <strong>FREE entry ticket</strong> into the grand draw on Sunday, 27th September 2026!
                         </p>
                       </div>
 
@@ -763,8 +763,8 @@ export default function RaffleTicketPurchase() {
                 <div className="rounded-xl p-6 sm:p-7 bg-[#175319]/35 border-[0.5px] border-white/15 backdrop-blur-[34px] shadow-[0_8px_32px_rgba(0,0,0,0.5)]">
                   <EventHeader
                     title="Federation Week Grand Draw Details"
-                    dateChip={{ month: 'SEP', day: '20' }}
-                    dateText="Sunday, 20th September 2026"
+                    dateChip={{ month: 'SEP', day: '27' }}
+                    dateText="Sunday, 27th September 2026"
                     timeText="1:00 PM • Live Stage Announcements at UNN"
                     locationTitle="St. Peter's Catholic Chaplaincy, UNN"
                     locationDetails="Main Campus Stage, University of Nigeria, Nsukka"
@@ -807,6 +807,28 @@ export default function RaffleTicketPurchase() {
                               ₦{UNIT_PRICE} / ticket
                             </span>
                           </div>
+                        </div>
+
+                        {/* Special Promo Banner: 10 Tickets = +1 Free Entry */}
+                        <div className="p-3 sm:p-3.5 rounded-xl bg-gradient-to-r from-[#FBE202]/15 via-[#166C16]/40 to-[#FBE202]/15 border border-[#FBE202]/40 flex items-center justify-between gap-3 text-left">
+                          <div className="flex items-center gap-2.5 min-w-0">
+                            <span className="text-xl shrink-0">🎁</span>
+                            <div>
+                              <p className="text-xs font-black text-[#FBE202] uppercase tracking-wide">
+                                Special Offer: Buy 10 Tickets, Get 1 FREE!
+                              </p>
+                              <p className="text-[11px] text-white/80 leading-tight mt-0.5">
+                                Every 10 tickets bought automatically gives you +1 free bonus ticket in the draw drum!
+                              </p>
+                            </div>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => setQuantity(10)}
+                            className="shrink-0 px-3 py-1.5 rounded-lg bg-[#FBE202] hover:bg-[#FBE202]/90 text-[#0A1E0D] text-xs font-black transition-all shadow-md active:scale-95 cursor-pointer"
+                          >
+                            Pick 10
+                          </button>
                         </div>
 
                         {/* Ticket Card in Selectable Mode */}
@@ -1151,7 +1173,7 @@ export default function RaffleTicketPurchase() {
                       {/* 1-Tap Share to WhatsApp */}
                       <a
                         href={`https://wa.me/?text=${encodeURIComponent(
-                          `🎟️ Grab your Federation Week Raffle Ticket for ₦200 and stand a chance to win:\n🥇 1st: 5000mAh Powerbank + Airbuds\n🥈 2nd: 3kg Gas + 10kg Rice\n🥉 3rd: Pressing Iron\n\nBuy with my link here: ${referralLink}`
+                          `🎟️ WIN BIG AT NFCS UNN FEDERATION WEEK 2026! 🎁\n\nTickets are just ₦200! Every 10 tickets = 1 FREE Ticket automatically! 🚀\n\n🏆 Prizes to be won:\n• 5kg Gas Cylinder\n• 50,000mAh Fast-Charging Power Banks\n• Wireless Earbuds\n• 10kg Bags of Rice\n• Electric Iron\n\n🔗 Get your tickets here:\n${referralLink}\n\n📅 Grand Draw: Sunday, 27th September 2026 at 1:00 PM`
                         )}`}
                         target="_blank"
                         rel="noopener noreferrer"
@@ -1233,7 +1255,7 @@ function printCustomerTickets(
           <div class="slip-footer">
             <span class="cut-hint">✁ CUT LINE</span>
             <span class="fold-hint">─ ─ ─ FOLD IN HALF & DROP IN BOX ─ ─ ─</span>
-            <span class="date-hint">20 SEP 2026</span>
+            <span class="date-hint">27 SEP 2026</span>
           </div>
         </div>
       `

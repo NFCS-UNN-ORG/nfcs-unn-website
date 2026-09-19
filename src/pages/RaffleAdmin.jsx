@@ -384,7 +384,7 @@ export default function RaffleAdmin() {
     }
 
     const tickets = (order.raffle_tickets || []).map((t) => t.ticket_number).join(', ');
-    const message = `Hello ${order.buyer_name}! 🎟️\n\nHere are your official NFCS UNN Federation Week 2026 Raffle Draw tickets:\n\n🎟️ *Tickets:* ${tickets || 'Attached to order'}\n🔢 *Entries:* ${order.quantity}\n💳 *Amount:* ₦${Number(order.total_amount).toLocaleString()}\n\n📅 *Grand Draw:* Sunday, 20th September 2026 at 1:00 PM\n📍 *Venue:* St. Peter's Catholic Chaplaincy inside Seat of Wisdom Hall, UNN\n\nPlease keep this message safe as proof of your entry. Good luck! 🎉`;
+    const message = `Hello ${order.buyer_name}! 🎟️\n\nHere are your official NFCS UNN Federation Week 2026 Raffle Draw tickets:\n\n🎟️ *Tickets:* ${tickets || 'Attached to order'}\n🔢 *Entries:* ${order.quantity}\n💳 *Amount:* ₦${Number(order.total_amount).toLocaleString()}\n\n📅 *Grand Draw:* Sunday, 27th September 2026 at 1:00 PM\n📍 *Venue:* St. Peter's Catholic Chaplaincy inside Seat of Wisdom Hall, UNN\n\nPlease keep this message safe as proof of your entry. Good luck! 🎉`;
 
     const url = `https://wa.me/${intlPhone}?text=${encodeURIComponent(message)}`;
     window.open(url, '_blank');
@@ -1230,7 +1230,7 @@ export default function RaffleAdmin() {
                               intlPhone = '234' + intlPhone;
                             }
                             const tickets = (manualResult.tickets || []).join(', ');
-                            const msg = `Hello ${manualResult.buyer_name}! 🎟️\n\nHere are your official NFCS UNN Federation Week 2026 Raffle Draw tickets:\n\n🎟️ *Tickets:* ${tickets}\n🔢 *Entries:* ${manualResult.quantity}\n💳 *Amount:* ₦${Number(manualResult.total_amount).toLocaleString()}\n\n📅 *Grand Draw:* Sunday, 20th September 2026 at 1:00 PM\n📍 *Venue:* St. Peter's Catholic Chaplaincy inside Seat of Wisdom Hall, UNN\n\nPlease keep this message safe as proof of your entry. Good luck! 🎉`;
+                            const msg = `Hello ${manualResult.buyer_name}! 🎟️\n\nHere are your official NFCS UNN Federation Week 2026 Raffle Draw tickets:\n\n🎟️ *Tickets:* ${tickets}\n🔢 *Entries:* ${manualResult.quantity}\n💳 *Amount:* ₦${Number(manualResult.total_amount).toLocaleString()}\n\n📅 *Grand Draw:* Sunday, 27th September 2026 at 1:00 PM\n📍 *Venue:* St. Peter's Catholic Chaplaincy inside Seat of Wisdom Hall, UNN\n\nPlease keep this message safe as proof of your entry. Good luck! 🎉`;
                             window.open(`https://wa.me/${intlPhone}?text=${encodeURIComponent(msg)}`, '_blank');
                           }}
                           className="w-full sm:w-auto px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow-md transition-all active:scale-95 cursor-pointer flex items-center justify-center gap-2"
@@ -1804,7 +1804,7 @@ function renderDrumSlipsPrintWindow(tickets, title = 'Raffle Drum Slips') {
           <div class="slip-footer">
             <span class="cut-hint">✁ CUT LINE</span>
             <span class="fold-hint">─ ─ ─ FOLD IN HALF & DROP IN BOX ─ ─ ─</span>
-            <span class="date-hint">20 SEP 2026</span>
+            <span class="date-hint">27 SEP 2026</span>
           </div>
         </div>
       `
