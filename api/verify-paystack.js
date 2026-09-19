@@ -378,7 +378,12 @@ export default async function handler(req, res) {
     let emailError = null;
     const recipientEmail = (buyer_email || order.buyer_email || '').trim();
 
-    if (process.env.RESEND_API_KEY && recipientEmail) {
+    const rawResendKey = process.env.RESEND_API_KEY || '';
+    const resendApiKey = rawResendKey.trim().replace(/^["']|["']$/g, '');
+    const rawResendFrom = process.env.RESEND_FROM_EMAIL || 'tickets@resend.dev';
+    const resendFromEmail = rawResendFrom.trim().replace(/^["']|["']$/g, '');
+
+    if (resendApiKey && recipientEmail) {
       try {
         const ticketChipsHtml = ticketNumbers
           .map(
@@ -448,11 +453,11 @@ export default async function handler(req, res) {
         const emailRes = await fetch('https://api.resend.com/emails', {
           method: 'POST',
           headers: {
-            Authorization: `Bearer ${process.env.RESEND_API_KEY.trim()}`,
+            Authorization: `Bearer ${resendApiKey}`,
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            from: process.env.RESEND_FROM_EMAIL || 'tickets@resend.dev',
+            from: resendFromEmail,
             to: [recipientEmail],
             subject: `🎟️ Your Federation Week Raffle Tickets (${totalTicketsCount} Entries) — ${transactionId}`,
             html: emailHtml,
@@ -470,7 +475,7 @@ export default async function handler(req, res) {
         emailError = `Resend exception: ${err.message}`;
         console.warn('Resend email exception in verify-paystack:', err);
       }
-    } else if (!process.env.RESEND_API_KEY) {
+    } else if (!resendApiKey) {
       emailError = 'RESEND_API_KEY not configured in Vercel settings';
       console.warn('verify-paystack: RESEND_API_KEY missing in environment variables.');
     }

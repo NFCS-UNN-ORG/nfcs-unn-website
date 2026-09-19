@@ -133,7 +133,9 @@ export default async function handler(req, res) {
   }
 
   // Simple shared-secret check so random people can't hit this endpoint.
-  if (req.headers['x-admin-secret'] !== process.env.ADMIN_SECRET) {
+  const clientSecret = (req.headers['x-admin-secret'] || '').trim().replace(/^["']|["']$/g, '');
+  const serverSecret = (process.env.ADMIN_SECRET || '').trim().replace(/^["']|["']$/g, '');
+  if (!clientSecret || !serverSecret || clientSecret !== serverSecret) {
     return res.status(401).json({ error: 'Unauthorized' });
   }
 
@@ -265,7 +267,12 @@ export default async function handler(req, res) {
     let emailSent = false;
     let emailError = null;
 
-    if (process.env.RESEND_API_KEY && cleanEmail) {
+    const rawResendKey = process.env.RESEND_API_KEY || '';
+    const resendApiKey = rawResendKey.trim().replace(/^["']|["']$/g, '');
+    const rawResendFrom = process.env.RESEND_FROM_EMAIL || 'tickets@resend.dev';
+    const resendFromEmail = rawResendFrom.trim().replace(/^["']|["']$/g, '');
+
+    if (resendApiKey && cleanEmail) {
       try {
         const ticketChipsHtml = ticketNumbers
           .map(
@@ -324,11 +331,11 @@ export default async function handler(req, res) {
         const emailRes = await fetch('https://api.resend.com/emails', {
           method: 'POST',
           headers: {
-            Authorization: `Bearer ${process.env.RESEND_API_KEY.trim()}`,
+            Authorization: `Bearer ${resendApiKey}`,
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            from: process.env.RESEND_FROM_EMAIL || 'tickets@resend.dev',
+            from: resendFromEmail,
             to: [cleanEmail],
             subject: `🎟️ Your Federation Week Raffle Tickets (${totalTicketsCount} Entries) — ${transactionId}`,
             html: emailHtml,

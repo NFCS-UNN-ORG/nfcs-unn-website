@@ -4,10 +4,10 @@
 export default async function handler(req, res) {
   const querySecret = req.query?.secret || '';
   const headerSecret = req.headers['x-admin-secret'] || '';
-  const clientSecret = (headerSecret || querySecret).trim();
-  const serverSecret = (process.env.ADMIN_SECRET || '').trim();
+  const clientSecret = (headerSecret || querySecret).trim().replace(/^["']|["']$/g, '');
+  const serverSecret = (process.env.ADMIN_SECRET || '').trim().replace(/^["']|["']$/g, '');
 
-  // Basic security check (flexible to whitespace)
+  // Basic security check (flexible to whitespace & quotes)
   if (!clientSecret || !serverSecret || clientSecret !== serverSecret) {
     return res.status(401).json({
       error: 'Unauthorized: Invalid Admin Secret',
@@ -15,8 +15,10 @@ export default async function handler(req, res) {
     });
   }
 
-  const apiKey = process.env.RESEND_API_KEY ? process.env.RESEND_API_KEY.trim() : null;
-  const fromEmail = process.env.RESEND_FROM_EMAIL ? process.env.RESEND_FROM_EMAIL.trim() : null;
+  const rawKey = process.env.RESEND_API_KEY || '';
+  const apiKey = rawKey.trim().replace(/^["']|["']$/g, '') || null;
+  const rawFrom = process.env.RESEND_FROM_EMAIL || '';
+  const fromEmail = rawFrom.trim().replace(/^["']|["']$/g, '') || null;
 
   const diagnostics = {
     resend_api_key_configured: !!apiKey,

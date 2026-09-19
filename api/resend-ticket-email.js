@@ -18,9 +18,9 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  // Admin secret check (trimmed to avoid subtle whitespace/newline issues)
-  const clientSecret = (req.headers['x-admin-secret'] || '').trim();
-  const serverSecret = (process.env.ADMIN_SECRET || '').trim();
+  // Admin secret check (trimmed & unquoted to avoid subtle whitespace/quote issues)
+  const clientSecret = (req.headers['x-admin-secret'] || '').trim().replace(/^["']|["']$/g, '');
+  const serverSecret = (process.env.ADMIN_SECRET || '').trim().replace(/^["']|["']$/g, '');
   if (!clientSecret || !serverSecret || clientSecret !== serverSecret) {
     return res.status(401).json({ error: 'Unauthorized: Invalid Admin Secret' });
   }
@@ -54,7 +54,9 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: 'No tickets are associated with this order' });
     }
 
-    if (!process.env.RESEND_API_KEY) {
+    const rawKey = process.env.RESEND_API_KEY || '';
+    const apiKey = rawKey.trim().replace(/^["']|["']$/g, '');
+    if (!apiKey) {
       return res.status(500).json({
         error: 'RESEND_API_KEY is not configured in Vercel environment variables'
       });
@@ -116,12 +118,13 @@ export default async function handler(req, res) {
       </div>
     `;
 
-    const fromEmail = process.env.RESEND_FROM_EMAIL || 'tickets@resend.dev';
+    const rawFrom = process.env.RESEND_FROM_EMAIL || 'tickets@resend.dev';
+    const fromEmail = rawFrom.trim().replace(/^["']|["']$/g, '');
 
     const emailRes = await fetch('https://api.resend.com/emails', {
       method: 'POST',
       headers: {
-        Authorization: `Bearer ${process.env.RESEND_API_KEY.trim()}`,
+        Authorization: `Bearer ${apiKey}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
